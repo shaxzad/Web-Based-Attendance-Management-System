@@ -12,7 +12,10 @@ import { routeTree } from "./routeTree.gen"
 import { ApiError, OpenAPI } from "./client"
 import { CustomProvider } from "./components/ui/provider"
 
-OpenAPI.BASE = import.meta.env.VITE_API_URL
+// Set API base URL - fallback to localhost if env var is not set
+const apiUrl = (import.meta as any).env?.VITE_API_URL || "http://localhost:8000"
+OpenAPI.BASE = apiUrl
+
 OpenAPI.TOKEN = async () => {
   return localStorage.getItem("access_token") || ""
 }
