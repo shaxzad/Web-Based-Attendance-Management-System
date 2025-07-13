@@ -1,13 +1,15 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from typing import Any, List
 
 from sqlmodel import Session, select
+from sqlalchemy import extract, func
 
 from app.core.security import get_password_hash, verify_password
 from app.models import (
     Attendance, AttendanceCreate, Department, DepartmentCreate, DepartmentUpdate,
-    Employee, EmployeeCreate, EmployeeUpdate, Item, ItemCreate, User, UserCreate, UserUpdate
+    Employee, EmployeeCreate, EmployeeUpdate, Item, ItemCreate, User, UserCreate, UserUpdate,
+    Holiday, HolidayCreate, HolidayUpdate
 )
 
 
@@ -170,3 +172,138 @@ def update_attendance(*, session: Session, db_attendance: Attendance, check_out_
     session.commit()
     session.refresh(db_attendance)
     return db_attendance
+
+
+# Holiday CRUD operations
+def create_holiday(*, session: Session, holiday_in: HolidayCreate, created_by: uuid.UUID) -> Holiday:
+    holiday_data = holiday_in.model_dump()
+    holiday_data["created_by"] = created_by
+    holiday = Holiday(**holiday_data)
+    session.add(holiday)
+    session.commit()
+    session.refresh(holiday)
+    return holiday
+
+
+def get_holiday(*, session: Session, holiday_id: uuid.UUID) -> Holiday | None:
+    return session.get(Holiday, holiday_id)
+
+
+def get_holidays(
+    *, 
+    session: Session, 
+    skip: int = 0, 
+    limit: int = 100,
+    year: int | None = None,
+    month: int | None = None,
+    holiday_type: str | None = None
+) -> List[Holiday]:
+    statement = select(Holiday)
+    
+    if year is not None:
+        statement = statement.where(extract('year', Holiday.holiday_date) == year)
+    if month is not None:
+        statement = statement.where(extract('month', Holiday.holiday_date) == month)
+    if holiday_type is not None:
+        statement = statement.where(Holiday.holiday_type == holiday_type)
+    
+    statement = statement.offset(skip).limit(limit).order_by(Holiday.holiday_date)
+    return session.exec(statement).all()
+
+
+def get_holidays_for_date_range(
+    *, 
+    session: Session, 
+    start_date: date, 
+    end_date: date
+) -> List[Holiday]:
+    """Get all holidays (including recurring ones) for a date range"""
+    # Get non-recurring holidays in the date range
+    non_recurring = session.exec(
+        select(Holiday)
+        .where(Holiday.holiday_date >= start_date)
+        .where(Holiday.holiday_date <= end_date)
+        .where(Holiday.is_recurring == False)
+        .where(Holiday.is_active == True)
+    ).all()
+    
+    # Get recurring holidays
+    recurring = session.exec(
+        select(Holiday)
+        .where(Holiday.is_recurring == True)
+        .where(Holiday.is_active == True)
+    ).all()
+    
+    # Generate recurring holiday instances for the date range
+    recurring_instances = []
+    for holiday in recurring:
+        instances = generate_recurring_dates(holiday, start_date, end_date)
+        for instance_date in instances:
+            recurring_instances.append(Holiday(
+                id=holiday.id,
+                title=holiday.title,
+                description=holiday.description,
+                holiday_date=instance_date,
+                holiday_type=holiday.holiday_type,
+                is_recurring=holiday.is_recurring,
+                recurrence_pattern=holiday.recurrence_pattern,
+                color=holiday.color,
+                is_active=holiday.is_active,
+                created_at=holiday.created_at,
+                updated_at=holiday.updated_at,
+                created_by=holiday.created_by
+            ))
+    
+    return non_recurring + recurring_instances
+
+
+def generate_recurring_dates(holiday: Holiday, start_date: date, end_date: date) -> List[date]:
+    """Generate recurring dates for a holiday within the given range"""
+    if not holiday.is_recurring or not holiday.recurrence_pattern:
+        return []
+    
+    dates = []
+    current_date = holiday.holiday_date
+    
+    while current_date <= end_date:
+        if current_date >= start_date:
+            dates.append(current_date)
+        
+        # Calculate next occurrence based on pattern
+        if holiday.recurrence_pattern == "yearly":
+            current_date = current_date.replace(year=current_date.year + 1)
+        elif holiday.recurrence_pattern == "monthly":
+            if current_date.month == 12:
+                current_date = current_date.replace(year=current_date.year + 1, month=1)
+            else:
+                current_date = current_date.replace(month=current_date.month + 1)
+        elif holiday.recurrence_pattern == "weekly":
+            current_date = current_date + timedelta(days=7)
+        else:
+            break
+    
+    return dates
+
+
+def update_holiday(*, session: Session, db_holiday: Holiday, holiday_in: HolidayUpdate) -> Holiday:
+    update_data = holiday_in.model_dump(exclude_unset=True)
+    update_data["updated_at"] = datetime.utcnow()
+    
+    for field, value in update_data.items():
+        setattr(db_holiday, field, value)
+    
+    session.add(db_holiday)
+    session.commit()
+    session.refresh(db_holiday)
+    return db_holiday
+
+
+def delete_holiday(*, session: Session, holiday_id: uuid.UUID) -> None:
+    holiday = session.get(Holiday, holiday_id)
+    if holiday:
+        session.delete(holiday)
+        session.commit()
+
+
+def get_holiday_count(*, session: Session) -> int:
+    return session.exec(select(func.count(Holiday.id))).one()

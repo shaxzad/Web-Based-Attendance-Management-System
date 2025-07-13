@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
@@ -239,3 +239,66 @@ class AttendancePublic(AttendanceBase):
 class AttendancesPublic(SQLModel):
     data: list[AttendancePublic]
     count: int
+
+
+class HolidayBase(SQLModel):
+    title: str = Field(max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    holiday_date: date = Field()
+    holiday_type: str = Field(default="public", max_length=50)  # public, company, special
+    is_recurring: bool = Field(default=False)
+    recurrence_pattern: str | None = Field(default=None, max_length=100)  # yearly, monthly, weekly
+    color: str = Field(default="#3182CE", max_length=7)  # hex color
+    is_active: bool = Field(default=True)
+
+
+class Holiday(HolidayBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: uuid.UUID = Field(foreign_key="user.id")
+
+
+class HolidayCreate(HolidayBase):
+    pass
+
+
+class HolidayUpdate(SQLModel):
+    title: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    holiday_date: date | None = None
+    holiday_type: str | None = Field(default=None, max_length=50)
+    is_recurring: bool | None = None
+    recurrence_pattern: str | None = Field(default=None, max_length=100)
+    color: str | None = Field(default=None, max_length=7)
+    is_active: bool | None = None
+
+
+class HolidayPublic(HolidayBase):
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+    created_by: uuid.UUID
+
+
+class HolidaysPublic(SQLModel):
+    data: list[HolidayPublic]
+    count: int
+
+
+class CalendarEvent(SQLModel):
+    id: uuid.UUID
+    title: str
+    description: str | None
+    date: date
+    holiday_type: str
+    color: str
+    is_recurring: bool
+    recurrence_pattern: str | None
+
+
+class CalendarView(SQLModel):
+    year: int
+    month: int
+    events: list[CalendarEvent]
+    holidays: list[CalendarEvent]
