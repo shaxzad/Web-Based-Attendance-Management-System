@@ -73,18 +73,17 @@ function HolidayCalendar() {
   const [view, setView] = useState<any>(Views.MONTH)
   const [date, setDate] = useState(new Date())
 
-  // Fetch holidays for the current month
+  // Fetch holidays for the current month (including recurring ones)
   const { data, isLoading } = useQuery({
     queryKey: ["holidays", date.getFullYear(), date.getMonth() + 1],
     queryFn: () =>
-      HolidaysService.readHolidays({
+      HolidaysService.getCalendarView({
         year: date.getFullYear(),
         month: date.getMonth() + 1,
-        limit: 100,
       }),
   })
 
-  const holidays = data?.data || []
+  const holidays = data?.holidays || []
 
   // Map holidays to calendar events
   const events = useMemo(
@@ -92,8 +91,8 @@ function HolidayCalendar() {
       holidays.map((h: any) => ({
         id: h.id,
         title: h.title,
-        start: new Date(h.holiday_date),
-        end: new Date(h.holiday_date),
+        start: new Date(h.date),
+        end: new Date(h.date),
         allDay: true,
         resource: h,
         color: h.color || HOLIDAY_COLORS[h.holiday_type] || "blue",
