@@ -31,10 +31,14 @@ import { Field } from "../ui/field"
 
 interface EditEmployeeProps {
   employee: EmployeePublic
+  isOpen?: boolean
+  onClose?: () => void
 }
 
-const EditEmployee = ({ employee }: EditEmployeeProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+const EditEmployee = ({ employee, isOpen: externalIsOpen, onClose }: EditEmployeeProps) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const setIsOpen = externalIsOpen !== undefined ? (onClose || (() => {})) : setInternalIsOpen
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
 
@@ -281,6 +285,29 @@ const EditEmployee = ({ employee }: EditEmployeeProps) => {
                     </option>
                   ))}
                 </select>
+              </Field>
+
+              <Field
+                invalid={!!errors.is_active}
+                errorText={errors.is_active?.message}
+                label="Employee Status"
+              >
+                <HStack gap={3} align="center">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    {...register("is_active")}
+                    defaultChecked={employee.is_active}
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  <Text fontSize="sm" color="gray.600">
+                    Employee is active
+                  </Text>
+                </HStack>
               </Field>
 
               <HStack gap={4} w="full">

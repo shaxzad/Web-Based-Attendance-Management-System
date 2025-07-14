@@ -1,4 +1,4 @@
-import { Badge, Container, Flex, Heading, Table } from "@chakra-ui/react"
+import { Badge, Container, Flex, Heading, Table, Box, Text } from "@chakra-ui/react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { z } from "zod"
@@ -116,12 +116,16 @@ function UsersTable() {
 function Admin() {
   return (
     <Container maxW="full">
-      <Heading size="lg" pt={12}>
+      <Heading size="lg" pt={12} mb={2}>
         Users Management
       </Heading>
-
-      <AddUser />
-      <UsersTable />
+      <Text color="gray.500" fontSize="md" mb={8}>
+        Manage all users, roles, and permissions in your organization
+      </Text>
+      <Box bg="white" borderRadius="xl" border="1px solid" borderColor="gray.200" boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: 'lg', transform: 'translateY(-2px) scale(1.01)' }} p={6} maxW="5xl" mx="auto">
+        <AddUser />
+        <UsersTable />
+      </Box>
     </Container>
   )
 }

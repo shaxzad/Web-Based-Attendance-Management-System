@@ -28,7 +28,7 @@ import {
   Line
 } from "recharts"
 import { FiUsers, FiTrendingUp, FiActivity, FiCalendar } from "react-icons/fi"
-import { FaBuilding } from "react-icons/fa"
+import { FaBuilding, FaRegCalendarAlt } from "react-icons/fa"
 
 import { DepartmentsService, EmployeesService, HolidaysService } from "@/client"
 import useAuth from "@/hooks/useAuth"
@@ -161,7 +161,7 @@ function Dashboard() {
       {/* Statistics Cards */}
       <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }} gap={6} mb={8}>
         <GridItem>
-          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
             <HStack justify="space-between">
               <VStack align="start" gap={1}>
                 <Text color="gray.600">Total Employees</Text>
@@ -178,7 +178,7 @@ function Dashboard() {
         </GridItem>
 
         <GridItem>
-          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
             <HStack justify="space-between">
               <VStack align="start" gap={1}>
                 <Text color="gray.600">Active Employees</Text>
@@ -195,7 +195,7 @@ function Dashboard() {
         </GridItem>
 
         <GridItem>
-          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
             <HStack justify="space-between">
               <VStack align="start" gap={1}>
                 <Text color="gray.600">Departments</Text>
@@ -212,7 +212,7 @@ function Dashboard() {
         </GridItem>
 
         <GridItem>
-          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
             <HStack justify="space-between">
               <VStack align="start" gap={1}>
                 <Text color="gray.600">Total Holidays</Text>
@@ -233,7 +233,7 @@ function Dashboard() {
       <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={6} mb={8}>
         {/* Department Employee Distribution */}
         <GridItem>
-          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
             <Heading size="md" mb={4}>Employees by Department</Heading>
             {isLoading ? (
               <Skeleton height="300px" />
@@ -254,7 +254,7 @@ function Dashboard() {
         </GridItem>
         {/* Employee Status Distribution */}
         <GridItem>
-          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
             <Heading size="md" mb={4}>Employee Status Distribution</Heading>
             {isLoading ? (
               <Skeleton height="300px" />
@@ -287,7 +287,7 @@ function Dashboard() {
       <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={6} mb={8}>
         {/* Holiday Types Distribution */}
         <GridItem>
-          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
             <Heading size="md" mb={4}>Holiday Types Distribution</Heading>
             {isLoading ? (
               <Skeleton height="300px" />
@@ -317,7 +317,7 @@ function Dashboard() {
 
         {/* Monthly Holiday Distribution */}
         <GridItem>
-          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+          <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
             <Heading size="md" mb={4}>Monthly Holiday Distribution ({currentYear})</Heading>
             {isLoading ? (
               <Skeleton height="300px" />
@@ -338,7 +338,7 @@ function Dashboard() {
       </Grid>
 
       {/* Recent Hires Chart */}
-      <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6} mb={8}>
+      <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }} mb={8}>
         <Heading size="md" mb={4}>Recent Hires (Last 6 Months)</Heading>
         {isLoading ? (
           <Skeleton height="300px" />
@@ -364,12 +364,12 @@ function Dashboard() {
       </Box>
 
       {/* Department List with Employee Counts */}
-      <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6}>
+      <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }}>
         <Heading size="md" mb={4}>Department Overview</Heading>
         {isLoading ? (
           <VStack gap={4}>
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} height="60px" width="100%" />
+              <Skeleton key={i} height="60px" width="100%" rounded="xl" />
             ))}
           </VStack>
         ) : (
@@ -382,6 +382,7 @@ function Dashboard() {
                 borderColor={borderColor}
                 borderRadius="md"
                 bg={useColorModeValue("gray.50", "gray.700")}
+                _hover={{ bg: useColorModeValue('blue.50', 'gray.600'), boxShadow: 'md' }}
               >
                 <HStack justify="space-between">
                   <VStack align="start" gap={1}>
@@ -406,12 +407,13 @@ function Dashboard() {
       </Box>
 
       {/* Upcoming Holidays Section */}
-      <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="md" p={6} mb={8}>
-        <Heading size="md" mb={4}>Upcoming Holidays (Next 30 Days)</Heading>
+      <Box bg={bgColor} border="1px solid" borderColor={borderColor} borderRadius="xl" p={6} boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: "lg", transform: "translateY(-2px) scale(1.02)" }} mb={8}>
+        <HStack mb={2} gap={2}><FaRegCalendarAlt color="#3182CE" /><Heading size="md">Upcoming Holidays</Heading></HStack>
+        <Text color="gray.500" fontSize="sm" mb={4}>See what's coming up in the next 30 days</Text>
         {isLoading ? (
           <VStack gap={4}>
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} height="60px" width="100%" />
+              <Skeleton key={i} height="60px" width="100%" rounded="xl" />
             ))}
           </VStack>
         ) : upcomingHolidays.length > 0 ? (
@@ -427,6 +429,7 @@ function Dashboard() {
                   borderColor={borderColor}
                   borderRadius="md"
                   bg={useColorModeValue("gray.50", "gray.700")}
+                  _hover={{ bg: useColorModeValue('blue.50', 'gray.600'), boxShadow: 'md' }}
                 >
                   <HStack justify="space-between">
                     <VStack align="start" gap={1}>
@@ -463,9 +466,7 @@ function Dashboard() {
               ))}
           </VStack>
         ) : (
-          <Box textAlign="center" py={8}>
-            <Text color="gray.500" fontSize="lg">No upcoming holidays in the next 30 days</Text>
-          </Box>
+          <Box textAlign="center" color="gray.400" py={8}><Text>No upcoming holidays in the next 30 days</Text></Box>
         )}
       </Box>
     </Container>

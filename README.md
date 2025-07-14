@@ -241,3 +241,10 @@ The Full Stack FastAPI Template is licensed under the terms of the MIT license.
 uvicorn app.main:app --reload
 
 # Backend comamnd `uv run uvicorn app.main:app --reload`
+
+
+# source .venv/bin/activate
+
+# uv sync
+
+# alembic upgrade head

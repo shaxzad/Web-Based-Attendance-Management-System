@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
+import { FaRegCalendarAlt } from "react-icons/fa"
 
 const locales = {
   "en-US": enUS,
@@ -175,46 +176,42 @@ function HolidayCalendar() {
     <Container maxW="7xl" py={8}>
       <VStack gap={6} align="stretch">
         <Box>
-          <Heading size="lg" mb={2}>
-            Holiday Calendar
-          </Heading>
-          <Text color="gray.600" fontSize="md" mb={4}>
-            Manage company holidays and public holidays with interactive calendar views
-          </Text>
+          <HStack mb={2} gap={2}><FaRegCalendarAlt color="#3182CE" /><Heading size="lg">Holiday Calendar</Heading></HStack>
+          <Text color="gray.500" fontSize="sm" mb={4}>Manage company and public holidays with interactive calendar views</Text>
           
           {/* Holiday Stats */}
           <HStack gap={4} mb={4}>
-            <Box bg="blue.50" p={3} borderRadius="md" border="1px solid" borderColor="blue.200" flex={1}>
+            <Box bg="white" borderRadius="xl" border="1px solid" borderColor="blue.200" boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: 'lg', transform: 'translateY(-2px) scale(1.02)' }} p={4} flex={1}>
               <Text fontSize="sm" color="blue.600" fontWeight="medium">Public Holidays</Text>
-              <Text fontSize="lg" fontWeight="bold" color="blue.700">
+              <Text fontSize="2xl" fontWeight="bold" color="blue.700">
                 {holidays.filter((h: any) => h.holiday_type === 'public').length}
               </Text>
             </Box>
-            <Box bg="green.50" p={3} borderRadius="md" border="1px solid" borderColor="green.200" flex={1}>
+            <Box bg="white" borderRadius="xl" border="1px solid" borderColor="green.200" boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: 'lg', transform: 'translateY(-2px) scale(1.02)' }} p={4} flex={1}>
               <Text fontSize="sm" color="green.600" fontWeight="medium">Company Holidays</Text>
-              <Text fontSize="lg" fontWeight="bold" color="green.700">
+              <Text fontSize="2xl" fontWeight="bold" color="green.700">
                 {holidays.filter((h: any) => h.holiday_type === 'company').length}
               </Text>
             </Box>
-            <Box bg="orange.50" p={3} borderRadius="md" border="1px solid" borderColor="orange.200" flex={1}>
+            <Box bg="white" borderRadius="xl" border="1px solid" borderColor="orange.200" boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: 'lg', transform: 'translateY(-2px) scale(1.02)' }} p={4} flex={1}>
               <Text fontSize="sm" color="orange.600" fontWeight="medium">Special Events</Text>
-              <Text fontSize="lg" fontWeight="bold" color="orange.700">
+              <Text fontSize="2xl" fontWeight="bold" color="orange.700">
                 {holidays.filter((h: any) => h.holiday_type === 'special').length}
               </Text>
             </Box>
-            <Box bg="purple.50" p={3} borderRadius="md" border="1px solid" borderColor="purple.200" flex={1}>
+            <Box bg="white" borderRadius="xl" border="1px solid" borderColor="purple.200" boxShadow="sm" transition="all 0.2s" _hover={{ boxShadow: 'lg', transform: 'translateY(-2px) scale(1.02)' }} p={4} flex={1}>
               <Text fontSize="sm" color="purple.600" fontWeight="medium">Recurring</Text>
-              <Text fontSize="lg" fontWeight="bold" color="purple.700">
+              <Text fontSize="2xl" fontWeight="bold" color="purple.700">
                 {holidays.filter((h: any) => h.is_recurring).length}
               </Text>
             </Box>
           </HStack>
         </Box>
         
-        <Box bg="white" borderRadius="lg" p={6} boxShadow="sm" border="1px solid" borderColor="gray.200">
+        <Box bg="white" borderRadius="xl" p={6} boxShadow="sm" border="1px solid" borderColor="gray.200" transition="all 0.2s" _hover={{ boxShadow: 'lg', transform: 'translateY(-2px) scale(1.01)' }}>
           {isLoading ? (
             <Box display="flex" justifyContent="center" py={12}>
-              <Spinner size="lg" color="primary.500" />
+              <Spinner size="lg" colorScheme="blue" />
             </Box>
           ) : (
             <>
@@ -270,6 +267,7 @@ function HolidayCalendar() {
                 color: "white",
                 border: "none",
                 padding: "2px 8px",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
               },
             })}
             components={{

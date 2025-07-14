@@ -27,10 +27,14 @@ import {
 
 interface DeleteEmployeeProps {
   employee: EmployeePublic
+  isOpen?: boolean
+  onClose?: () => void
 }
 
-const DeleteEmployee = ({ employee }: DeleteEmployeeProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+const DeleteEmployee = ({ employee, isOpen: externalIsOpen, onClose }: DeleteEmployeeProps) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const setIsOpen = externalIsOpen !== undefined ? (onClose || (() => {})) : setInternalIsOpen
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
 

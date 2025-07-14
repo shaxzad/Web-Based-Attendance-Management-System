@@ -14,7 +14,7 @@ import { FaEdit } from "react-icons/fa"
 
 import { type DepartmentUpdate, DepartmentsService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
-import type { Department } from "@/client/schemas.gen"
+import type { DepartmentPublic } from "@/client/types.gen"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 import {
@@ -29,11 +29,15 @@ import {
 import { Field } from "../ui/field"
 
 interface EditDepartmentProps {
-  department: Department
+  department: DepartmentPublic
+  isOpen?: boolean
+  onClose?: () => void
 }
 
-const EditDepartment = ({ department }: EditDepartmentProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+const EditDepartment = ({ department, isOpen: externalIsOpen, onClose }: EditDepartmentProps) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const setIsOpen = externalIsOpen !== undefined ? (onClose || (() => {})) : setInternalIsOpen
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
   const {
