@@ -1,123 +1,73 @@
+import { Button, Text } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-
-import {
-  Button,
-  DialogActionTrigger,
-  DialogTitle,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
 import { useState } from "react"
-import { FaTrash } from "react-icons/fa"
+import { useForm } from "react-hook-form"
 
 import { EmployeesService } from "@/client"
-import type { EmployeePublic } from "@/client/types.gen"
-import type { ApiError } from "@/client/core/ApiError"
+import { AppModal } from "@/components/ui/modal"
 import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
-import {
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTrigger,
-} from "../ui/dialog"
 
-interface DeleteEmployeeProps {
-  employee: EmployeePublic
-  isOpen?: boolean
-  onClose?: () => void
-}
-
-const DeleteEmployee = ({ employee, isOpen: externalIsOpen, onClose }: DeleteEmployeeProps) => {
-  const [internalIsOpen, setInternalIsOpen] = useState(false)
-  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
-  const setIsOpen = externalIsOpen !== undefined ? (onClose || (() => {})) : setInternalIsOpen
+const DeleteEmployee = ({ id }: { id: string }) => {
+  const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
-  const { showSuccessToast } = useCustomToast()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm()
+
+  const deleteEmployee = async (id: string) => {
+    await EmployeesService.deleteEmployee({ employeeId: id })
+  }
 
   const mutation = useMutation({
-    mutationFn: () =>
-      EmployeesService.deleteEmployee({ employeeId: employee.id }),
+    mutationFn: deleteEmployee,
     onSuccess: () => {
-      showSuccessToast("Employee deleted successfully.")
+      showSuccessToast("The employee was deleted successfully")
       setIsOpen(false)
     },
-    onError: (err: ApiError) => {
-      handleError(err)
+    onError: () => {
+      showErrorToast("An error occurred while deleting the employee")
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] })
+      queryClient.invalidateQueries()
     },
   })
 
-  const handleDelete = () => {
-    mutation.mutate()
+  const onSubmit = async () => {
+    mutation.mutate(id)
+  }
+
+  const handleClose = () => {
+    setIsOpen(false)
   }
 
   return (
-    <DialogRoot
-      size={{ base: "xs", md: "sm" }}
-      placement="center"
-      open={isOpen}
-      onOpenChange={({ open }) => setIsOpen(open)}
-    >
-      <DialogTrigger asChild>
-        <Button
-          variant="subtle"
-          colorPalette="red"
-          size="sm"
-        >
-          <FaTrash fontSize="14px" />
-          Delete
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Employee</DialogTitle>
-        </DialogHeader>
-        <DialogBody>
-          <VStack gap={4} textAlign="center">
-            <Text>
-              Are you sure you want to delete{" "}
-              <strong>
-                {employee.first_name} {employee.last_name}
-              </strong>
-              ?
-            </Text>
-            <Text fontSize="sm" color="gray.500">
-              Employee ID: {employee.employee_id}
-            </Text>
-            <Text fontSize="sm" color="red.500">
-              This action cannot be undone.
-            </Text>
-          </VStack>
-        </DialogBody>
-
-        <DialogFooter gap={2}>
-          <DialogActionTrigger asChild>
-            <Button
-              variant="subtle"
-              colorPalette="gray"
-              disabled={mutation.isPending}
-            >
-              Cancel
-            </Button>
-          </DialogActionTrigger>
-          <Button
-            variant="solid"
-            colorPalette="red"
-            onClick={handleDelete}
-            loading={mutation.isPending}
-          >
-            Delete
-          </Button>
-        </DialogFooter>
-        <DialogCloseTrigger />
-      </DialogContent>
-    </DialogRoot>
+    <>
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        colorScheme="red"
+        onClick={() => setIsOpen(true)}
+      >
+        Delete Employee
+      </Button>
+      
+      <AppModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Delete Employee"
+        submitText="Delete"
+        cancelText="Cancel"
+        onSubmit={handleSubmit(onSubmit)}
+        isLoading={isSubmitting}
+        size="md"
+      >
+        <Text mb={4}>
+          Are you sure you want to delete this employee? This action cannot be undone.
+        </Text>
+      </AppModal>
+    </>
   )
 }
 

@@ -7,9 +7,10 @@ from sqlalchemy import extract, func
 
 from app.core.security import get_password_hash, verify_password
 from app.models import (
-    Attendance, AttendanceCreate, Department, DepartmentCreate, DepartmentUpdate,
+    Attendance, AttendanceCreate, AttendanceUpdate, Department, DepartmentCreate, DepartmentUpdate,
     Employee, EmployeeCreate, EmployeeUpdate, Item, ItemCreate, User, UserCreate, UserUpdate,
-    Holiday, HolidayCreate, HolidayUpdate
+    Holiday, HolidayCreate, HolidayUpdate, ZKTecoDevice, ZKTecoDeviceCreate, ZKTecoDeviceUpdate,
+    DeviceSyncLog, DeviceSyncLogBase
 )
 
 
@@ -166,12 +167,58 @@ def get_employee_attendances(*, session: Session, employee_id: uuid.UUID, skip: 
     return session.exec(statement).all()
 
 
-def update_attendance(*, session: Session, db_attendance: Attendance, check_out_time: datetime) -> Attendance:
-    db_attendance.check_out_time = check_out_time
+def get_attendances(
+    *, 
+    session: Session, 
+    skip: int = 0, 
+    limit: int = 100,
+    employee_id: uuid.UUID | None = None,
+    device_id: uuid.UUID | None = None,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+    status: str | None = None
+) -> List[Attendance]:
+    statement = select(Attendance)
+    
+    if employee_id:
+        statement = statement.where(Attendance.employee_id == employee_id)
+    if device_id:
+        statement = statement.where(Attendance.zkteco_device_id == device_id)
+    if start_date:
+        statement = statement.where(Attendance.check_in_time >= start_date)
+    if end_date:
+        statement = statement.where(Attendance.check_in_time <= end_date)
+    if status:
+        statement = statement.where(Attendance.status == status)
+    
+    statement = statement.offset(skip).limit(limit).order_by(Attendance.check_in_time.desc())
+    return session.exec(statement).all()
+
+
+def update_attendance(*, session: Session, db_attendance: Attendance, attendance_in: AttendanceUpdate) -> Attendance:
+    attendance_data = attendance_in.model_dump(exclude_unset=True)
+    attendance_data["updated_at"] = datetime.utcnow()
+    
+    for field, value in attendance_data.items():
+        setattr(db_attendance, field, value)
+    
     session.add(db_attendance)
     session.commit()
     session.refresh(db_attendance)
     return db_attendance
+
+
+def delete_attendance(*, session: Session, attendance_id: uuid.UUID) -> bool:
+    attendance = get_attendance(session=session, attendance_id=attendance_id)
+    if not attendance:
+        return False
+    session.delete(attendance)
+    session.commit()
+    return True
+
+
+def get_attendance_count(*, session: Session) -> int:
+    return session.exec(select(func.count(Attendance.id))).one()
 
 
 # Holiday CRUD operations
@@ -307,3 +354,87 @@ def delete_holiday(*, session: Session, holiday_id: uuid.UUID) -> None:
 
 def get_holiday_count(*, session: Session) -> int:
     return session.exec(select(func.count(Holiday.id))).one()
+
+
+# ZKTeco Device CRUD operations
+def create_zkteco_device(*, session: Session, device_in: ZKTecoDeviceCreate) -> ZKTecoDevice:
+    device_data = device_in.model_dump()
+    device = ZKTecoDevice(**device_data)
+    session.add(device)
+    session.commit()
+    session.refresh(device)
+    return device
+
+
+def get_zkteco_device(*, session: Session, device_id: uuid.UUID) -> ZKTecoDevice | None:
+    return session.get(ZKTecoDevice, device_id)
+
+
+def get_zkteco_device_by_device_id(*, session: Session, device_id: str) -> ZKTecoDevice | None:
+    statement = select(ZKTecoDevice).where(ZKTecoDevice.device_id == device_id)
+    return session.exec(statement).first()
+
+
+def get_zkteco_devices(*, session: Session, skip: int = 0, limit: int = 100, is_active: bool | None = None) -> List[ZKTecoDevice]:
+    statement = select(ZKTecoDevice)
+    if is_active is not None:
+        statement = statement.where(ZKTecoDevice.is_active == is_active)
+    statement = statement.offset(skip).limit(limit)
+    return session.exec(statement).all()
+
+
+def update_zkteco_device(*, session: Session, db_device: ZKTecoDevice, device_in: ZKTecoDeviceUpdate) -> ZKTecoDevice:
+    device_data = device_in.model_dump(exclude_unset=True)
+    device_data["updated_at"] = datetime.utcnow()
+    
+    for field, value in device_data.items():
+        setattr(db_device, field, value)
+    
+    session.add(db_device)
+    session.commit()
+    session.refresh(db_device)
+    return db_device
+
+
+def delete_zkteco_device(*, session: Session, device_id: uuid.UUID) -> bool:
+    device = get_zkteco_device(session=session, device_id=device_id)
+    if not device:
+        return False
+    session.delete(device)
+    session.commit()
+    return True
+
+
+# Device Sync Log CRUD operations
+def create_device_sync_log(*, session: Session, sync_log_in: DeviceSyncLogBase) -> DeviceSyncLog:
+    sync_log = DeviceSyncLog(**sync_log_in.model_dump())
+    session.add(sync_log)
+    session.commit()
+    session.refresh(sync_log)
+    return sync_log
+
+
+def get_device_sync_logs(
+    *, 
+    session: Session, 
+    skip: int = 0, 
+    limit: int = 100,
+    device_id: uuid.UUID | None = None,
+    sync_type: str | None = None,
+    sync_status: str | None = None
+) -> List[DeviceSyncLog]:
+    statement = select(DeviceSyncLog)
+    
+    if device_id:
+        statement = statement.where(DeviceSyncLog.device_id == device_id)
+    if sync_type:
+        statement = statement.where(DeviceSyncLog.sync_type == sync_type)
+    if sync_status:
+        statement = statement.where(DeviceSyncLog.sync_status == sync_status)
+    
+    statement = statement.offset(skip).limit(limit).order_by(DeviceSyncLog.created_at.desc())
+    return session.exec(statement).all()
+
+
+def get_device_sync_log(*, session: Session, log_id: uuid.UUID) -> DeviceSyncLog | None:
+    return session.get(DeviceSyncLog, log_id)

@@ -9,30 +9,17 @@ import {
   Container,
   HStack,
   Heading,
-  Skeleton,
   Text,
   VStack,
   IconButton,
 } from "@chakra-ui/react"
-
-import { 
-  FaBuilding, 
-  FaChartLine,
-  FaPlus,
-  FaSort,
-  FaSortUp,
-  FaSortDown,
-  FaDownload,
-  FaCog,
-  FaFilter,
-  FaTimes
-} from "react-icons/fa"
 
 import { DepartmentsService } from "@/client"
 import type { DepartmentPublic } from "@/client/types.gen"
 import { handleError } from "@/utils"
 import AddDepartment from "@/components/Departments/AddDepartment"
 import DepartmentActions from "@/components/Departments/DepartmentActions"
+import { AppTable, createStatusColumn } from "@/components/ui/table"
 
 // Animation styles
 const fadeIn = "opacity 0.3s ease-out"
@@ -40,8 +27,8 @@ const slideIn = "transform 0.4s ease-out"
 const pulse = "transform 2s infinite"
 
 const Departments = () => {
-  const [sortBy, setSortBy] = useState("id") // id, name, created_at
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
 
   // Color mode values
@@ -65,50 +52,102 @@ const Departments = () => {
       return []
     }
 
-    const sorted = [...departmentsResponse]
-    sorted.sort((a, b) => {
-      let aValue: string | number
-      let bValue: string | number
+    let filtered = [...departmentsResponse]
 
-      switch (sortBy) {
-        case "name":
-          aValue = a.name.toLowerCase()
-          bValue = b.name.toLowerCase()
-          break
-        case "created_at":
-          aValue = new Date(a.created_at).getTime()
-          bValue = new Date(b.created_at).getTime()
-          break
-        case "id":
-        default:
-          aValue = a.id
-          bValue = b.id
-          break
-      }
+    // Search filter
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim()
+      filtered = filtered.filter((dept: DepartmentPublic) => 
+        dept.name.toLowerCase().includes(term) ||
+        (dept.description && dept.description.toLowerCase().includes(term))
+      )
+    }
 
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortOrder === "asc" 
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue)
-      } else {
-        return sortOrder === "asc"
-          ? (aValue as number) - (bValue as number)
-          : (bValue as number) - (aValue as number)
-      }
-    })
+    // Status filter
+    if (statusFilter && statusFilter !== "all") {
+      filtered = filtered.filter((dept: DepartmentPublic) => {
+        if (statusFilter === "active") return dept.is_active === true
+        if (statusFilter === "inactive") return dept.is_active === false
+        return true
+      })
+    }
 
-    return sorted
-  }, [departmentsResponse, sortBy, sortOrder])
+    return filtered
+  }, [departmentsResponse, searchTerm, statusFilter])
 
   if (error) {
     console.error("Error loading departments:", error)
   }
 
-  // Get sort icon
-  const getSortIcon = (field: string) => {
-    if (sortBy !== field) return <FaSort fontSize="12px" />
-    return sortOrder === "asc" ? <FaSortUp fontSize="12px" /> : <FaSortDown fontSize="12px" />
-  }
+  // Define table columns
+  const columns = [
+    { key: 'id', label: '#' },
+    { 
+      key: 'name', 
+      label: 'Department Name',
+      render: (value: string, row: DepartmentPublic) => (
+        <HStack gap={4} align="center">
+          <Box 
+            p={3} 
+            bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" 
+            borderRadius="full"
+            boxShadow="md"
+          >
+            <Text fontSize="16px" color="white" fontWeight="bold">D</Text>
+          </Box>
+          <VStack align="start" gap={1}>
+            <Text fontSize="md" fontWeight="700" color={textColor}>
+              {value}
+            </Text>
+            <Text fontSize="xs" color={mutedTextColor} fontWeight="500">
+              ID: {row.id.slice(0, 8)}...
+            </Text>
+          </VStack>
+        </HStack>
+      )
+    },
+    { 
+      key: 'description', 
+      label: 'Description',
+      render: (value: string) => (
+        <Text 
+          fontSize="sm" 
+          color={textColor} 
+          maxW="280px" 
+          style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {value || 'No description provided'}
+        </Text>
+      )
+    },
+    createStatusColumn('is_active', 'Status'),
+    { 
+      key: 'created_at', 
+      label: 'Created Date',
+      render: (value: string) => (
+        <Text fontSize="sm" color={textColor} fontWeight="500">
+          {new Date(value).toLocaleDateString()}
+        </Text>
+      )
+    },
+    { 
+      key: 'actions', 
+      label: 'Actions',
+      width: "120px",
+      render: (value: any, row: DepartmentPublic) => <DepartmentActions department={row} />
+    }
+  ]
+
+  // Filter options
+  const filterOptions = [
+    { label: "All Status", value: "all" },
+    { label: "Active Only", value: "active" },
+    { label: "Inactive Only", value: "inactive" },
+  ]
 
   return (
     <Box minH="100vh" bg={bgColor}>
@@ -126,7 +165,7 @@ const Departments = () => {
                     boxShadow="lg"
                     animation={`${pulse} 2s infinite`}
                   >
-                    <FaBuilding fontSize="28px" color="white" />
+                    <Text fontSize="28px" color="white" fontWeight="bold">D</Text>
                   </Box>
                   <VStack align="start" gap={2}>
                     <Heading size="lg" color={textColor}>Department Management</Heading>
@@ -139,22 +178,22 @@ const Departments = () => {
                   <IconButton
                     aria-label="Export"
                     variant="outline"
-                    colorPalette="blue"
+                    colorScheme="blue"
                     size="lg"
                     _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                     transition="all 0.2s"
                   >
-                    <FaDownload />
+                    <Text fontSize="16px">📊</Text>
                   </IconButton>
                   <IconButton
                     aria-label="Settings"
                     variant="outline"
-                    colorPalette="gray"
+                    colorScheme="gray"
                     size="lg"
                     _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
                     transition="all 0.2s"
                   >
-                    <FaCog />
+                    <Text fontSize="16px">⚙️</Text>
                   </IconButton>
                   <AddDepartment />
                 </HStack>
@@ -189,12 +228,12 @@ const Departments = () => {
                       <Text fontSize="sm" color={mutedTextColor} fontWeight="medium">Total Departments</Text>
                       <Text fontSize="3xl" fontWeight="bold" color={textColor}>{departments?.length || 0}</Text>
                       <HStack gap={1}>
-                        <FaChartLine fontSize="12px" color="#3182ce" />
+                        <Text fontSize="12px" color="#3182ce">📈</Text>
                         <Text fontSize="xs" color="blue.500">+5% this month</Text>
                       </HStack>
                     </VStack>
                     <Box p={3} bg="blue.50" borderRadius="xl">
-                      <FaBuilding fontSize="24px" color="#3182ce" />
+                      <Text fontSize="24px" color="#3182ce" fontWeight="bold">D</Text>
                     </Box>
                   </HStack>
                 </Box>
@@ -227,12 +266,12 @@ const Departments = () => {
                         {departments?.filter(dept => dept.is_active).length || 0}
                       </Text>
                       <HStack gap={1}>
-                        <FaChartLine fontSize="12px" color="#38a169" />
+                        <Text fontSize="12px" color="#38a169">📈</Text>
                         <Text fontSize="xs" color="green.500">+12% this month</Text>
                       </HStack>
                     </VStack>
                     <Box p={3} bg="green.50" borderRadius="xl">
-                      <FaPlus fontSize="24px" color="#38a169" />
+                      <Text fontSize="24px" color="#38a169" fontWeight="bold">+</Text>
                     </Box>
                   </HStack>
                 </Box>
@@ -270,379 +309,34 @@ const Departments = () => {
                         }).length || 0}
                       </Text>
                       <HStack gap={1}>
-                        <FaChartLine fontSize="12px" color="#805ad5" />
+                        <Text fontSize="12px" color="#805ad5">📈</Text>
                         <Text fontSize="xs" color="purple.500">+3 new this month</Text>
                       </HStack>
                     </VStack>
                     <Box p={3} bg="purple.50" borderRadius="xl">
-                      <FaBuilding fontSize="24px" color="#805ad5" />
+                      <Text fontSize="24px" color="#805ad5" fontWeight="bold">D</Text>
                     </Box>
                   </HStack>
                 </Box>
               </HStack>
             </Box>
 
-            {/* Enhanced Sort Controls */}
-            <Box 
-              bg={cardBg} 
-              p={6} 
-              borderRadius="xl" 
-              border="1px solid" 
-              borderColor={borderColor} 
-              boxShadow="lg"
-              animation={`${fadeIn} 0.8s ease-out`}
-            >
-              <HStack justify="space-between" align="center">
-                <HStack gap={4}>
-                  <Text fontSize="sm" color={mutedTextColor} fontWeight="medium">Sort by:</Text>
-                  <select
-                    value={sortBy}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortBy(e.target.value)}
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: `2px solid ${borderColor}`,
-                      fontSize: '14px',
-                      backgroundColor: cardBg,
-                      color: textColor,
-                      fontWeight: '500'
-                    }}
-                  >
-                    <option value="id">ID</option>
-                    <option value="name">Name</option>
-                    <option value="created_at">Created Date</option>
-                  </select>
-                  <select
-                    value={sortOrder}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortOrder(e.target.value as "asc" | "desc")}
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      border: `2px solid ${borderColor}`,
-                      fontSize: '14px',
-                      backgroundColor: cardBg,
-                      color: textColor,
-                      fontWeight: '500'
-                    }}
-                  >
-                    <option value="asc">↑ Ascending</option>
-                    <option value="desc">↓ Descending</option>
-                  </select>
-                </HStack>
-                <Button
-                  aria-label="Toggle filters"
-                  onClick={() => setShowFilters(!showFilters)}
-                  variant="outline"
-                  size="md"
-                  borderRadius="xl"
-                  _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-                  transition="all 0.2s"
-                >
-                  {showFilters ? <FaTimes /> : <FaFilter />}
-                  {showFilters ? " Hide Filters" : " Show Filters"}
-                </Button>
-              </HStack>
-
-              {/* Enhanced Filters */}
-              {showFilters && (
-                <Box 
-                  pt={6} 
-                  borderTop="2px solid" 
-                  borderColor={borderColor}
-                  animation={`${fadeIn} 0.3s ease-out`}
-                >
-                  <VStack gap={4} align="stretch">
-                    <HStack gap={6} flexWrap="wrap">
-                      <VStack align="start" gap={2}>
-                        <Text fontSize="sm" color={mutedTextColor} fontWeight="medium">Status Filter</Text>
-                        <select
-                          style={{
-                            width: '140px',
-                            padding: '10px 14px',
-                            borderRadius: '10px',
-                            border: `2px solid ${borderColor}`,
-                            fontSize: '14px',
-                            backgroundColor: cardBg,
-                            color: textColor,
-                            fontWeight: '500'
-                          }}
-                        >
-                          <option value="all">All Status</option>
-                          <option value="active">Active Only</option>
-                          <option value="inactive">Inactive Only</option>
-                        </select>
-                      </VStack>
-                      
-                      <VStack align="start" gap={2}>
-                        <Text fontSize="sm" color={mutedTextColor} fontWeight="medium">Results</Text>
-                        <Box 
-                          p={3} 
-                          bg="blue.50" 
-                          borderRadius="lg" 
-                          border="1px solid" 
-                          borderColor="blue.200"
-                        >
-                          <Text fontSize="sm" color="blue.700" fontWeight="600">
-                            {departments.length} department{departments.length !== 1 ? 's' : ''} found
-                          </Text>
-                        </Box>
-                      </VStack>
-                    </HStack>
-                  </VStack>
-                </Box>
-              )}
-            </Box>
-
-            {isLoading ? (
-              <Box 
-                bg={cardBg} 
-                borderRadius="xl" 
-                border="1px solid" 
-                borderColor={borderColor} 
-                overflow="hidden"
-                boxShadow="lg"
-                animation={`${fadeIn} 0.9s ease-out`}
-              >
-                <Box p={8}>
-                  <VStack gap={6} align="stretch">
-                    {[...Array(5)].map((_, i) => (
-                      <HStack key={i} gap={4}>
-                        <Skeleton w="50px" h="50px" borderRadius="full" />
-                        <VStack align="start" gap={3} flex={1}>
-                          <Skeleton h="24px" w="180px" />
-                          <Skeleton h="18px" w="120px" />
-                        </VStack>
-                        <Skeleton h="24px" w="200px" />
-                        <Skeleton h="24px" w="100px" />
-                        <Skeleton h="24px" w="120px" />
-                        <Skeleton h="40px" w="40px" borderRadius="lg" />
-                      </HStack>
-                    ))}
-                  </VStack>
-                </Box>
-              </Box>
-            ) : departments && departments.length > 0 ? (
-              <Box 
-                bg={cardBg} 
-                borderRadius="xl" 
-                border="1px solid" 
-                borderColor={borderColor} 
-                overflow="hidden" 
-                boxShadow="lg"
-                animation={`${fadeIn} 1s ease-out`}
-              >
-                <Box overflowX="auto">
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ 
-                        background: 'linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)',
-                        borderBottom: `2px solid ${borderColor}` 
-                      }}>
-                        <th style={{ 
-                          padding: '20px 16px', 
-                          textAlign: 'center', 
-                          fontWeight: '700', 
-                          fontSize: '14px',
-                          color: mutedTextColor,
-                          minWidth: '60px'
-                        }}>
-                          #
-                        </th>
-                        <th style={{ 
-                          padding: '20px 16px', 
-                          textAlign: 'left', 
-                          fontWeight: '700', 
-                          fontSize: '14px',
-                          color: mutedTextColor,
-                          minWidth: '220px',
-                          cursor: 'pointer'
-                        }}
-                        onClick={() => {
-                          setSortBy("name")
-                          setSortOrder(sortBy === "name" && sortOrder === "asc" ? "desc" : "asc")
-                        }}
-                        >
-                          <HStack gap={2}>
-                            <Text>Department Name</Text>
-                            {getSortIcon("name")}
-                          </HStack>
-                        </th>
-                        <th style={{ 
-                          padding: '20px 16px', 
-                          textAlign: 'left', 
-                          fontWeight: '700', 
-                          fontSize: '14px',
-                          color: mutedTextColor,
-                          minWidth: '320px'
-                        }}>
-                          Description
-                        </th>
-                        <th style={{ 
-                          padding: '20px 16px', 
-                          textAlign: 'left', 
-                          fontWeight: '700', 
-                          fontSize: '14px',
-                          color: mutedTextColor,
-                          minWidth: '120px'
-                        }}>
-                          Status
-                        </th>
-                        <th style={{ 
-                          padding: '20px 16px', 
-                          textAlign: 'left', 
-                          fontWeight: '700', 
-                          fontSize: '14px',
-                          color: mutedTextColor,
-                          minWidth: '140px',
-                          cursor: 'pointer'
-                        }}
-                        onClick={() => {
-                          setSortBy("created_at")
-                          setSortOrder(sortBy === "created_at" && sortOrder === "asc" ? "desc" : "asc")
-                        }}
-                        >
-                          <HStack gap={2}>
-                            <Text>Created Date</Text>
-                            {getSortIcon("created_at")}
-                          </HStack>
-                        </th>
-                        <th style={{ 
-                          padding: '20px 16px', 
-                          textAlign: 'center', 
-                          fontWeight: '700', 
-                          fontSize: '14px',
-                          color: mutedTextColor,
-                          minWidth: '120px'
-                        }}>
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {departments.map((department: DepartmentPublic, index: number) => (
-                        <tr key={department.id} style={{ 
-                          borderBottom: `1px solid ${borderColor}`,
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f8fafc'
-                          e.currentTarget.style.transform = 'scale(1.01)'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent'
-                          e.currentTarget.style.transform = 'scale(1)'
-                        }}
-                        >
-                          <td style={{ padding: '20px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
-                            <Box 
-                              p={2} 
-                              bg="blue.50" 
-                              borderRadius="full" 
-                              w="40px" 
-                              h="40px" 
-                              display="flex" 
-                              alignItems="center" 
-                              justifyContent="center"
-                              mx="auto"
-                            >
-                              <Text fontSize="sm" color="blue.600" fontWeight="600">
-                                {index + 1}
-                              </Text>
-                            </Box>
-                          </td>
-                          <td style={{ padding: '20px 16px', verticalAlign: 'middle' }}>
-                            <HStack gap={4} align="center">
-                              <Box 
-                                p={3} 
-                                bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" 
-                                borderRadius="full"
-                                boxShadow="md"
-                              >
-                                <FaBuilding fontSize="16px" color="white" />
-                              </Box>
-                              <VStack align="start" gap={1}>
-                                <Text fontSize="md" fontWeight="700" color={textColor}>
-                                  {department.name}
-                                </Text>
-                                <Text fontSize="xs" color={mutedTextColor} fontWeight="500">
-                                  ID: {department.id.slice(0, 8)}...
-                                </Text>
-                              </VStack>
-                            </HStack>
-                          </td>
-                          <td style={{ padding: '20px 16px', verticalAlign: 'middle' }}>
-                            <Text 
-                              fontSize="sm" 
-                              color={textColor} 
-                              maxW="280px" 
-                              style={{
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
-                              {department.description || 'No description provided'}
-                            </Text>
-                          </td>
-                          <td style={{ padding: '20px 16px', verticalAlign: 'middle' }}>
-                            <Badge
-                              colorPalette={department.is_active ? "green" : "red"}
-                              variant="subtle"
-                              size="md"
-                              borderRadius="lg"
-                              px={3}
-                              py={1}
-                            >
-                              {department.is_active ? "Active" : "Inactive"}
-                            </Badge>
-                          </td>
-                          <td style={{ padding: '20px 16px', verticalAlign: 'middle' }}>
-                            <Text fontSize="sm" color={textColor} fontWeight="500">
-                              {new Date(department.created_at).toLocaleDateString()}
-                            </Text>
-                          </td>
-                          <td style={{ padding: '20px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
-                            <DepartmentActions department={department} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Box>
-              </Box>
-            ) : (
-              <Box 
-                bg={cardBg} 
-                borderRadius="xl" 
-                p={16} 
-                border="2px dashed" 
-                borderColor={borderColor} 
-                textAlign="center"
-                animation={`${fadeIn} 1.1s ease-out`}
-              >
-                <VStack gap={6} py={8}>
-                  <Box 
-                    p={6} 
-                    bg="gray.50" 
-                    borderRadius="full"
-                    animation={`${pulse} 2s infinite`}
-                  >
-                    <FaBuilding fontSize="64px" color={mutedTextColor} />
-                  </Box>
-                  <VStack gap={3}>
-                    <Text fontSize="2xl" color={textColor} fontWeight="bold">
-                      No departments found
-                    </Text>
-                    <Text color={mutedTextColor} maxW="md" fontSize="lg">
-                      Start organizing your workforce by creating departments. Departments help you group employees and manage them more effectively.
-                    </Text>
-                  </VStack>
-                  <Box mt={4}>
-                    <AddDepartment />
-                  </Box>
-                </VStack>
-              </Box>
-            )}
+            {/* AppTable Component */}
+            <AppTable
+              data={departments}
+              columns={columns}
+              isLoading={isLoading}
+              searchPlaceholder="Search departments by name or description..."
+              searchValue={searchTerm}
+              onSearchChange={setSearchTerm}
+              filterOptions={filterOptions}
+              filterValue={statusFilter}
+              onFilterChange={setStatusFilter}
+              onShowFilters={() => setShowFilters(!showFilters)}
+              showFilters={showFilters}
+              emptyMessage="No departments found. Start organizing your workforce by creating departments."
+              actions={<AddDepartment />}
+            />
           </VStack>
         </Box>
       </Container>

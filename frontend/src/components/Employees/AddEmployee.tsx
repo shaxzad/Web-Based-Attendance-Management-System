@@ -3,8 +3,6 @@ import { type SubmitHandler, useForm } from "react-hook-form"
 
 import {
   Button,
-  DialogActionTrigger,
-  DialogTitle,
   HStack,
   Input,
   Text,
@@ -12,21 +10,12 @@ import {
 } from "@chakra-ui/react"
 
 import { useState } from "react"
-import { FaPlus } from "react-icons/fa"
 
 import { type EmployeeCreate, EmployeesService, DepartmentsService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
-import {
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTrigger,
-} from "../ui/dialog"
+import { AppModal } from "../ui/modal"
 import { Field } from "../ui/field"
 
 const AddEmployee = () => {
@@ -84,33 +73,39 @@ const AddEmployee = () => {
     mutation.mutate(data)
   }
 
+  const handleClose = () => {
+    setIsOpen(false)
+    reset()
+  }
+
   return (
-    <DialogRoot
-      size={{ base: "xs", md: "lg" }}
-      placement="center"
-      open={isOpen}
-      onOpenChange={({ open }) => setIsOpen(open)}
-    >
-      <DialogTrigger asChild>
-        <Button
-          value="add-employee"
-          my={4}
-          colorScheme="primary"
-          variant="solid"
-          size="lg"
-          fontWeight="bold"
-        >
-          <FaPlus fontSize="24px" />
-          Add Employee
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogHeader>
-            <DialogTitle>Add Employee</DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            <Text mb={4}>Fill in the details to add a new employee.</Text>
+    <>
+      <Button
+        value="add-employee"
+        my={4}
+        colorScheme="primary"
+        variant="solid"
+        size="lg"
+        fontWeight="bold"
+        onClick={() => setIsOpen(true)}
+      >
+        Add Employee
+      </Button>
+
+      <AppModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Add Employee"
+        submitText="Add Employee"
+        cancelText="Cancel"
+        onSubmit={handleSubmit(onSubmit)}
+        isLoading={isSubmitting}
+        size="lg"
+      >
+        <VStack gap={4} align="stretch">
+          <Text color="gray.600" fontSize="sm">
+            Fill in the details to add a new employee.
+          </Text>
             <VStack gap={4}>
               <Field
                 required
@@ -316,33 +311,10 @@ const AddEmployee = () => {
                 </Field>
               </HStack>
             </VStack>
-          </DialogBody>
-
-          <DialogFooter gap={2}>
-            <DialogActionTrigger asChild>
-              <Button
-                variant="subtle"
-                colorPalette="gray"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            </DialogActionTrigger>
-            <Button
-              variant="solid"
-              type="submit"
-              disabled={!isValid}
-              loading={isSubmitting}
-              colorPalette="primary"
-            >
-              Save
-            </Button>
-          </DialogFooter>
-        </form>
-        <DialogCloseTrigger />
-      </DialogContent>
-    </DialogRoot>
-  )
+          </VStack>
+        </AppModal>
+      </>
+    )
 }
 
 export default AddEmployee 

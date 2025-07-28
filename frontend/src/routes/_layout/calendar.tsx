@@ -21,19 +21,9 @@ import { HolidaysService } from "@/client"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import useCustomToast from "@/hooks/useCustomToast"
-import {
-  DialogRoot,
-  DialogContent,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  DialogTitle,
-  DialogTrigger,
-  DialogCloseTrigger,
-} from "@/components/ui/dialog"
+import { AppModal } from "@/components/ui/modal"
 import { Field } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
-import { FaRegCalendarAlt } from "react-icons/fa"
 
 const locales = {
   "en-US": enUS,
@@ -156,8 +146,7 @@ function HolidayCalendar() {
     onOpen()
   }, [onOpen])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = () => {
     if (selectedEvent) {
       updateMutation.mutate({ id: selectedEvent.id, ...form })
     } else {
@@ -175,7 +164,12 @@ function HolidayCalendar() {
     <Container maxW="7xl" py={8}>
       <VStack gap={6} align="stretch">
         <Box>
-          <HStack mb={2} gap={2}><FaRegCalendarAlt color="#3182CE" /><Heading size="lg">Holiday Calendar</Heading></HStack>
+          <HStack mb={2} gap={2}>
+            <Box p={2} bg="blue.50" borderRadius="full">
+              <Text fontSize="20px" color="#3182CE" fontWeight="bold">C</Text>
+            </Box>
+            <Heading size="lg">Holiday Calendar</Heading>
+          </HStack>
           <Text color="gray.500" fontSize="sm" mb={4}>Manage company and public holidays with interactive calendar views</Text>
           
           {/* Holiday Stats */}
@@ -246,154 +240,154 @@ function HolidayCalendar() {
                 </HStack>
               </Box>
               <Calendar
-            localizer={localizer}
-            events={events}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: 600 }}
-            views={[Views.MONTH, Views.WEEK, Views.DAY]}
-            onView={setView}
-            view={view}
-            date={date}
-            onNavigate={setDate}
-            selectable
-            onSelectSlot={handleSelectSlot}
-            onSelectEvent={handleSelectEvent}
-            eventPropGetter={(event: any) => ({
-              style: {
-                backgroundColor: event.color,
-                borderRadius: "6px",
-                color: "white",
-                border: "none",
-                padding: "2px 8px",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-              },
-            })}
-            components={{
-              event: (props: any) => (
-                <Box p={1}>
-                  <VStack gap={1} align="start">
-                    <Text fontWeight="bold" fontSize="sm">
-                      {props.title}
-                    </Text>
-                    <HStack gap={1}>
-                      <Badge size="sm" colorScheme={HOLIDAY_COLORS[props.event.holiday_type] || "blue"}>
-                        {props.event.holiday_type}
-                      </Badge>
-                      {props.event.is_recurring && (
-                        <Badge size="sm" colorScheme="purple">Repeats</Badge>
-                      )}
-                    </HStack>
-                  </VStack>
-                </Box>
-              ),
-            }}
-          />
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: 600 }}
+                views={[Views.MONTH, Views.WEEK, Views.DAY]}
+                onView={setView}
+                view={view}
+                date={date}
+                onNavigate={setDate}
+                selectable
+                onSelectSlot={handleSelectSlot}
+                onSelectEvent={handleSelectEvent}
+                eventPropGetter={(event: any) => ({
+                  style: {
+                    backgroundColor: event.color,
+                    borderRadius: "6px",
+                    color: "white",
+                    border: "none",
+                    padding: "2px 8px",
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                  },
+                })}
+                components={{
+                  event: (props: any) => (
+                    <Box p={1}>
+                      <VStack gap={1} align="start">
+                        <Text fontWeight="bold" fontSize="sm">
+                          {props.title}
+                        </Text>
+                        <HStack gap={1}>
+                          <Badge size="sm" colorScheme={HOLIDAY_COLORS[props.event.holiday_type] || "blue"}>
+                            {props.event.holiday_type}
+                          </Badge>
+                          {props.event.is_recurring && (
+                            <Badge size="sm" colorScheme="purple">Repeats</Badge>
+                          )}
+                        </HStack>
+                      </VStack>
+                    </Box>
+                  ),
+                }}
+              />
             </>
           )}
         </Box>
-      <DialogRoot open={isOpen} onOpenChange={({ open }) => open ? onOpen() : onClose()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedEvent ? "Edit Holiday" : "Add Holiday"}</DialogTitle>
-            <DialogCloseTrigger />
-          </DialogHeader>
-          <form onSubmit={handleSubmit}>
-            <DialogBody>
-              <Text mb={4} color="gray.600" fontSize="sm">
-                {selectedEvent ? "Update the holiday details below." : "Fill in the details to add a new holiday."}
-              </Text>
-              <VStack gap={4} align="stretch">
-                <Field required label="Title">
-                  <Input
-                    value={form.title}
-                    onChange={(e) => setForm((f: any) => ({ ...f, title: e.target.value }))}
-                  />
-                </Field>
-                <Field label="Description">
-                  <Input
-                    value={form.description || ""}
-                    onChange={(e) => setForm((f: any) => ({ ...f, description: e.target.value }))}
-                  />
-                </Field>
-                <Field required label="Date">
-                  <Input
-                    type="date"
-                    value={form.holiday_date}
-                    onChange={(e) => setForm((f: any) => ({ ...f, holiday_date: e.target.value }))}
-                  />
-                </Field>
-                <Field required label="Type">
-                  <select
-                    value={form.holiday_type}
-                    onChange={(e) => setForm((f: any) => ({ ...f, holiday_type: e.target.value }))}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '6px',
-                      fontSize: '14px'
-                    }}
-                  >
-                    <option value="public">Public Holiday</option>
-                    <option value="company">Company Holiday</option>
-                    <option value="special">Special Event</option>
-                  </select>
-                </Field>
-                <Field>
-                  <Checkbox
-                    checked={form.is_recurring}
-                    onCheckedChange={({ checked }) => setForm((f: any) => ({ ...f, is_recurring: checked }))}
-                  >
-                    Repeat every year/month/week
-                  </Checkbox>
-                  {form.is_recurring && (
-                    <select
-                      style={{
-                        marginTop: '8px',
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '6px',
-                        fontSize: '14px'
-                      }}
-                      value={form.recurrence_pattern}
-                      onChange={(e) => setForm((f: any) => ({ ...f, recurrence_pattern: e.target.value }))}
-                    >
-                      <option value="yearly">Every Year</option>
-                      <option value="monthly">Every Month</option>
-                      <option value="weekly">Every Week</option>
-                    </select>
-                  )}
-                </Field>
-                <Field label="Color">
-                  <Input
-                    type="color"
-                    value={form.color}
-                    onChange={(e) => setForm((f: any) => ({ ...f, color: e.target.value }))}
-                    width="60px"
-                    height="40px"
-                    p={0}
-                  />
-                </Field>
-              </VStack>
-            </DialogBody>
-            <DialogFooter>
-              {selectedEvent && (
-                <Button colorScheme="red" mr={2} onClick={handleDelete} loading={deleteMutation.isPending}>
-                  Delete
-                </Button>
+
+        <AppModal
+          isOpen={isOpen}
+          onClose={onClose}
+          title={selectedEvent ? "Edit Holiday" : "Add Holiday"}
+          submitText={selectedEvent ? "Update" : "Add"}
+          cancelText="Cancel"
+          onSubmit={handleSubmit}
+          isLoading={createMutation.isPending || updateMutation.isPending}
+          size="lg"
+        >
+          <Text mb={4} color="gray.600" fontSize="sm">
+            {selectedEvent ? "Update the holiday details below." : "Fill in the details to add a new holiday."}
+          </Text>
+          <VStack gap={4} align="stretch">
+            <Field required label="Title">
+              <Input
+                value={form.title}
+                onChange={(e) => setForm((f: any) => ({ ...f, title: e.target.value }))}
+              />
+            </Field>
+            <Field label="Description">
+              <Input
+                value={form.description || ""}
+                onChange={(e) => setForm((f: any) => ({ ...f, description: e.target.value }))}
+              />
+            </Field>
+            <Field required label="Date">
+              <Input
+                type="date"
+                value={form.holiday_date}
+                onChange={(e) => setForm((f: any) => ({ ...f, holiday_date: e.target.value }))}
+              />
+            </Field>
+            <Field required label="Type">
+              <select
+                value={form.holiday_type}
+                onChange={(e) => setForm((f: any) => ({ ...f, holiday_type: e.target.value }))}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '6px',
+                  fontSize: '14px'
+                }}
+              >
+                <option value="public">Public Holiday</option>
+                <option value="company">Company Holiday</option>
+                <option value="special">Special Event</option>
+              </select>
+            </Field>
+            <Field>
+              <Checkbox
+                checked={form.is_recurring}
+                onCheckedChange={({ checked }) => setForm((f: any) => ({ ...f, is_recurring: checked }))}
+              >
+                Repeat every year/month/week
+              </Checkbox>
+              {form.is_recurring && (
+                <select
+                  style={{
+                    marginTop: '8px',
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}
+                  value={form.recurrence_pattern}
+                  onChange={(e) => setForm((f: any) => ({ ...f, recurrence_pattern: e.target.value }))}
+                >
+                  <option value="yearly">Every Year</option>
+                  <option value="monthly">Every Month</option>
+                  <option value="weekly">Every Week</option>
+                </select>
               )}
-              <Button onClick={onClose} mr={2} variant="ghost">
-                Cancel
+            </Field>
+            <Field label="Color">
+              <Input
+                type="color"
+                value={form.color}
+                onChange={(e) => setForm((f: any) => ({ ...f, color: e.target.value }))}
+                width="60px"
+                height="40px"
+                p={0}
+              />
+            </Field>
+          </VStack>
+          
+          {selectedEvent && (
+            <Box mt={4} pt={4} borderTop="1px solid" borderColor="gray.200">
+              <Button
+                colorScheme="red"
+                onClick={handleDelete}
+                isLoading={deleteMutation.isPending}
+                size="sm"
+              >
+                Delete Holiday
               </Button>
-              <Button type="submit" colorScheme="blue" loading={createMutation.isPending || updateMutation.isPending}>
-                {selectedEvent ? "Update" : "Add"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </DialogRoot>
+            </Box>
+          )}
+        </AppModal>
       </VStack>
     </Container>
   )

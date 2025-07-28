@@ -208,15 +208,71 @@ class NewPassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=40)
 
 
-# Attendance Models (for future use)
+# ZKTeco Device Management Models
+class ZKTecoDeviceBase(SQLModel):
+    device_name: str = Field(max_length=100)
+    device_ip: str = Field(max_length=15)  # IP address of the device
+    device_port: int = Field(default=4370)  # Default ZKTeco port
+    device_id: str = Field(unique=True, max_length=50)  # Device serial number
+    location: str | None = Field(default=None, max_length=200)
+    description: str | None = Field(default=None, max_length=500)
+    is_active: bool = True
+    sync_interval: int = Field(default=5, description="Sync interval in minutes")
+    last_sync: datetime | None = None
+    device_status: str = Field(default="offline", max_length=20)  # online, offline, error
+
+
+class ZKTecoDeviceCreate(ZKTecoDeviceBase):
+    pass
+
+
+class ZKTecoDeviceUpdate(SQLModel):
+    device_name: str | None = Field(default=None, max_length=100)
+    device_ip: str | None = Field(default=None, max_length=15)
+    device_port: int | None = Field(default=None)
+    location: str | None = Field(default=None, max_length=200)
+    description: str | None = Field(default=None, max_length=500)
+    is_active: bool | None = None
+    sync_interval: int | None = Field(default=None, description="Sync interval in minutes")
+
+
+class ZKTecoDevice(ZKTecoDeviceBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Relationships
+    attendances: list["Attendance"] = Relationship(back_populates="device")
+
+
+class ZKTecoDevicePublic(ZKTecoDeviceBase):
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+
+class ZKTecoDevicesPublic(SQLModel):
+    data: list[ZKTecoDevicePublic]
+    count: int
+
+
+# Enhanced Attendance Models with device support
 class AttendanceBase(SQLModel):
     check_in_time: datetime
     check_out_time: datetime | None = None
-    device_id: str | None = Field(default=None, max_length=100)  # Zetco device ID
+    device_id: str | None = Field(default=None, max_length=100)  # ZKTeco device ID
+    zkteco_device_id: uuid.UUID | None = Field(default=None, foreign_key="zktecodevice.id")
+    attendance_type: str = Field(default="fingerprint", max_length=20)  # fingerprint, card, manual
+    status: str = Field(default="present", max_length=20)  # present, absent, late, early_leave
 
 
 class AttendanceCreate(AttendanceBase):
     employee_id: uuid.UUID
+
+
+class AttendanceUpdate(SQLModel):
+    check_out_time: datetime | None = None
+    status: str | None = Field(default=None, max_length=20)
 
 
 class Attendance(AttendanceBase, table=True):
@@ -227,6 +283,7 @@ class Attendance(AttendanceBase, table=True):
     
     # Relationships
     employee: Employee = Relationship(back_populates="attendances")
+    device: ZKTecoDevice | None = Relationship(back_populates="attendances")
 
 
 class AttendancePublic(AttendanceBase):
@@ -239,6 +296,21 @@ class AttendancePublic(AttendanceBase):
 class AttendancesPublic(SQLModel):
     data: list[AttendancePublic]
     count: int
+
+
+# ZKTeco Device Sync Log
+class DeviceSyncLogBase(SQLModel):
+    device_id: uuid.UUID
+    sync_type: str = Field(max_length=20)  # attendance, users, logs
+    records_synced: int = 0
+    sync_status: str = Field(max_length=20)  # success, failed, partial
+    error_message: str | None = Field(default=None, max_length=1000)
+    sync_duration: float | None = Field(default=None)  # in seconds
+
+
+class DeviceSyncLog(DeviceSyncLogBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class HolidayBase(SQLModel):

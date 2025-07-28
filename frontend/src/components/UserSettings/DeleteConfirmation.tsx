@@ -1,46 +1,36 @@
-import { Button, ButtonGroup, Text } from "@chakra-ui/react"
+import { Button, Text } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
-import { type ApiError, UsersService } from "@/client"
-import {
-  DialogActionTrigger,
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import useAuth from "@/hooks/useAuth"
+import { UsersService } from "@/client"
+import { AppModal } from "@/components/ui/modal"
 import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
 
 const DeleteConfirmation = () => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
-  const { showSuccessToast } = useCustomToast()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
   const {
     handleSubmit,
     formState: { isSubmitting },
   } = useForm()
-  const { logout } = useAuth()
+
+  const deleteUser = async () => {
+    await UsersService.deleteUserMe()
+  }
 
   const mutation = useMutation({
-    mutationFn: () => UsersService.deleteUserMe(),
+    mutationFn: deleteUser,
     onSuccess: () => {
-      showSuccessToast("Your account has been successfully deleted")
+      showSuccessToast("Your account has been deleted successfully")
       setIsOpen(false)
-      logout()
     },
-    onError: (err: ApiError) => {
-      handleError(err)
+    onError: () => {
+      showErrorToast("An error occurred while deleting your account")
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] })
+      queryClient.invalidateQueries()
     },
   })
 
@@ -48,60 +38,35 @@ const DeleteConfirmation = () => {
     mutation.mutate()
   }
 
+  const handleClose = () => {
+    setIsOpen(false)
+  }
+
   return (
     <>
-      <DialogRoot
-        size={{ base: "xs", md: "md" }}
-        role="alertdialog"
-        placement="center"
-        open={isOpen}
-        onOpenChange={({ open }) => setIsOpen(open)}
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        colorScheme="red"
+        onClick={() => setIsOpen(true)}
       >
-        <DialogTrigger asChild>
-          <Button variant="solid" colorPalette="red" mt={4}>
-            Delete
-          </Button>
-        </DialogTrigger>
-
-        <DialogContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <DialogCloseTrigger />
-            <DialogHeader>
-              <DialogTitle>Confirmation Required</DialogTitle>
-            </DialogHeader>
-            <DialogBody>
-              <Text mb={4}>
-                All your account data will be{" "}
-                <strong>permanently deleted.</strong> If you are sure, please
-                click <strong>"Confirm"</strong> to proceed. This action cannot
-                be undone.
-              </Text>
-            </DialogBody>
-
-            <DialogFooter gap={2}>
-              <ButtonGroup>
-                <DialogActionTrigger asChild>
-                  <Button
-                    variant="subtle"
-                    colorPalette="gray"
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                </DialogActionTrigger>
-                <Button
-                  variant="solid"
-                  colorPalette="red"
-                  type="submit"
-                  loading={isSubmitting}
-                >
-                  Delete
-                </Button>
-              </ButtonGroup>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </DialogRoot>
+        Delete Account
+      </Button>
+      
+      <AppModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Confirmation Required"
+        submitText="Delete Account"
+        cancelText="Cancel"
+        onSubmit={handleSubmit(onSubmit)}
+        isLoading={isSubmitting}
+        size="md"
+      >
+        <Text mb={4}>
+          Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.
+        </Text>
+      </AppModal>
     </>
   )
 }
