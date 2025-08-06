@@ -5,8 +5,8 @@ import {
   VStack,
   Button,
   Portal,
+  Text,
 } from "@chakra-ui/react"
-import { FaEllipsisV, FaEdit, FaTrash } from "react-icons/fa"
 import type { EmployeePublic } from "@/client/types.gen"
 import EditEmployee from "./EditEmployee"
 import DeleteEmployee from "./DeleteEmployee"
@@ -75,12 +75,12 @@ const EmployeeActions = ({ employee }: EmployeeActionsProps) => {
         aria-label="Employee actions"
         variant="ghost"
         size="sm"
-        colorPalette="gray"
+        colorScheme="gray"
         _hover={{ bg: "gray.100" }}
         onClick={handleButtonClick}
         ref={buttonRef}
       >
-        <FaEllipsisV fontSize="14px" />
+        <Text fontSize="14px">⋯</Text>
       </IconButton>
 
       {isOpen && dropdownPos && (
@@ -108,7 +108,7 @@ const EmployeeActions = ({ employee }: EmployeeActionsProps) => {
                 _hover={{ bg: "blue.50" }}
                 onClick={handleEditClick}
               >
-                <FaEdit fontSize="14px" />
+                <Text fontSize="14px">✏️</Text>
                 Edit Employee
               </Button>
               <Button
@@ -120,7 +120,7 @@ const EmployeeActions = ({ employee }: EmployeeActionsProps) => {
                 _hover={{ bg: "red.50" }}
                 onClick={handleDeleteClick}
               >
-                <FaTrash fontSize="14px" />
+                <Text fontSize="14px">🗑️</Text>
                 Delete Employee
               </Button>
             </VStack>
@@ -132,16 +132,12 @@ const EmployeeActions = ({ employee }: EmployeeActionsProps) => {
       {showEditModal && (
         <EditEmployee 
           employee={employee} 
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
         />
       )}
       
       {showDeleteModal && (
         <DeleteEmployee 
-          employee={employee}
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
+          id={employee.id}
         />
       )}
     </Box>

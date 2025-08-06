@@ -1,38 +1,22 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { type SubmitHandler, useForm } from "react-hook-form"
+
+import { type ItemPublic, type ItemUpdate, ItemsService } from "@/client"
+import type { ApiError } from "@/client/core/ApiError"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
 import {
   Button,
-  ButtonGroup,
-  DialogActionTrigger,
   Input,
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { type SubmitHandler, useForm } from "react-hook-form"
-import { FaExchangeAlt } from "react-icons/fa"
-
-import { type ApiError, type ItemPublic, ItemsService } from "@/client"
-import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
-import {
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog"
+import { AppModal } from "../ui/modal"
 import { Field } from "../ui/field"
 
 interface EditItemProps {
   item: ItemPublic
-}
-
-interface ItemUpdateForm {
-  title: string
-  description?: string
 }
 
 const EditItem = ({ item }: EditItemProps) => {
@@ -44,17 +28,14 @@ const EditItem = ({ item }: EditItemProps) => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<ItemUpdateForm>({
+  } = useForm<ItemUpdate>({
     mode: "onBlur",
     criteriaMode: "all",
-    defaultValues: {
-      ...item,
-      description: item.description ?? undefined,
-    },
+    defaultValues: item,
   })
 
   const mutation = useMutation({
-    mutationFn: (data: ItemUpdateForm) =>
+    mutationFn: (data: ItemUpdate) =>
       ItemsService.updateItem({ id: item.id, requestBody: data }),
     onSuccess: () => {
       showSuccessToast("Item updated successfully.")
@@ -69,82 +50,72 @@ const EditItem = ({ item }: EditItemProps) => {
     },
   })
 
-  const onSubmit: SubmitHandler<ItemUpdateForm> = async (data) => {
+  const onSubmit: SubmitHandler<ItemUpdate> = (data) => {
     mutation.mutate(data)
   }
 
+  const handleClose = () => {
+    setIsOpen(false)
+    reset()
+  }
+
   return (
-    <DialogRoot
-      size={{ base: "xs", md: "md" }}
-      placement="center"
-      open={isOpen}
-      onOpenChange={({ open }) => setIsOpen(open)}
-    >
-      <DialogTrigger asChild>
-        <Button variant="ghost">
-          <FaExchangeAlt fontSize="16px" />
-          Edit Item
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogHeader>
-            <DialogTitle>Edit Item</DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            <Text mb={4}>Update the item details below.</Text>
-            <VStack gap={4}>
-              <Field
-                required
-                invalid={!!errors.title}
-                errorText={errors.title?.message}
-                label="Title"
-              >
-                <Input
-                  id="title"
-                  {...register("title", {
-                    required: "Title is required",
-                  })}
-                  placeholder="Title"
-                  type="text"
-                />
-              </Field>
+    <>
+      <Button 
+        variant="ghost" 
+        size="sm"
+        onClick={() => setIsOpen(true)}
+      >
+        Edit Item
+      </Button>
+      
+      <AppModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Edit Item"
+        submitText="Update"
+        cancelText="Cancel"
+        onSubmit={handleSubmit(onSubmit)}
+        isLoading={isSubmitting}
+        size="md"
+      >
+        <Text mb={4}>Update the item details below.</Text>
+        <VStack gap={4}>
+          <Field
+            required
+            invalid={!!errors.title}
+            errorText={errors.title?.message}
+            label="Title"
+          >
+            <Input
+              id="title"
+              {...register("title", {
+                required: "Title is required",
+                minLength: {
+                  value: 2,
+                  message: "Title must be at least 2 characters",
+                },
+              })}
+              placeholder="Item title"
+              type="text"
+            />
+          </Field>
 
-              <Field
-                invalid={!!errors.description}
-                errorText={errors.description?.message}
-                label="Description"
-              >
-                <Input
-                  id="description"
-                  {...register("description")}
-                  placeholder="Description"
-                  type="text"
-                />
-              </Field>
-            </VStack>
-          </DialogBody>
-
-          <DialogFooter gap={2}>
-            <ButtonGroup>
-              <DialogActionTrigger asChild>
-                <Button
-                  variant="subtle"
-                  colorPalette="gray"
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-              </DialogActionTrigger>
-              <Button variant="solid" type="submit" loading={isSubmitting}>
-                Save
-              </Button>
-            </ButtonGroup>
-          </DialogFooter>
-        </form>
-        <DialogCloseTrigger />
-      </DialogContent>
-    </DialogRoot>
+          <Field
+            invalid={!!errors.description}
+            errorText={errors.description?.message}
+            label="Description"
+          >
+            <Input
+              id="description"
+              {...register("description")}
+              placeholder="Item description"
+              type="text"
+            />
+          </Field>
+        </VStack>
+      </AppModal>
+    </>
   )
 }
 
