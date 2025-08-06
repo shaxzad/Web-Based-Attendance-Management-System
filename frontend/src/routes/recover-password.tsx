@@ -87,7 +87,7 @@ function RecoverPassword() {
           />
         </InputGroup>
       </Field>
-      <Button variant="solid" type="submit" loading={isSubmitting}>
+              <Button variant="default" type="submit" loading={isSubmitting}>
         Continue
       </Button>
     </Container>

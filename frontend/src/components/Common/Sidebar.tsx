@@ -47,7 +47,7 @@ const Sidebar = () => {
         <DrawerContent maxW="xs">
           <DrawerCloseTrigger />
           <DrawerBody>
-            <Flex flexDir="column" justify="space-between">
+            <Flex flexDir="column" justify="space-between" h="100%">
               <Box>
                 <SidebarItems onClose={() => setOpen(false)} />
                 <Flex
@@ -64,11 +64,25 @@ const Sidebar = () => {
                   <Text>Log Out</Text>
                 </Flex>
               </Box>
-              {currentUser?.email && (
-                <Text fontSize="sm" p={2} truncate maxW="sm">
-                  Logged in as: {currentUser.email}
+              <Box mt="auto">
+                {currentUser?.email && (
+                  <Text fontSize="sm" p={2} truncate maxW="sm">
+                    Logged in as: {currentUser.email}
+                  </Text>
+                )}
+                <Text
+                  fontSize="md"
+                  fontWeight="bold"
+                  color="brand.primary"
+                  textAlign="center"
+                  p={4}
+                  borderTop="1px solid"
+                  borderColor="gray.200"
+                  bg="white"
+                >
+                  IOM PAKISTAN
                 </Text>
-              )}
+              </Box>
             </Flex>
           </DrawerBody>
           <DrawerCloseTrigger />
@@ -77,7 +91,7 @@ const Sidebar = () => {
 
       {/* Desktop */}
 
-      <Box
+      <Flex
         display={{ base: "none", md: "flex" }}
         position="sticky"
         bg="brand.accent"
@@ -85,11 +99,32 @@ const Sidebar = () => {
         minW="xs"
         h="100vh"
         p={4}
+        flexDir="column"
+        justify="space-between"
       >
         <Box w="100%">
           <SidebarItems />
         </Box>
-      </Box>
+        <Box mt="auto">
+          {currentUser?.email && (
+            <Text fontSize="sm" p={2} truncate maxW="sm" mb={2}>
+              Logged in as: {currentUser.email}
+            </Text>
+          )}
+          <Text
+            fontSize="md"
+            fontWeight="bold"
+            color="brand.primary"
+            textAlign="center"
+            p={4}
+            borderTop="1px solid"
+            borderColor="gray.200"
+            bg="white"
+          >
+            IOM PAKISTAN
+          </Text>
+        </Box>
+      </Flex>
     </>
   )
 }
