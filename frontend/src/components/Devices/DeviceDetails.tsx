@@ -7,7 +7,7 @@ import {
   HStack,
   Text,
   Grid,
-  GridItem,
+
 } from '@chakra-ui/react';
 import { AppModal } from '@/components/ui/modal';
 import { useCustomToast } from '@/hooks/useCustomToast';

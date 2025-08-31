@@ -1,0 +1,9 @@
+name = "attendance-management-frontend"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "attendance-management-frontend"
+
+[env.staging]
+name = "attendance-management-frontend-staging"

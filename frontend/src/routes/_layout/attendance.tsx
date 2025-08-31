@@ -1,22 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import {
-  Badge,
   Box,
+  Button,
   Container,
   HStack,
   Heading,
-  Skeleton,
   Text,
   VStack,
-  Flex,
-  Button,
-  IconButton,
 } from "@chakra-ui/react";
 import { useCustomToast } from '@/hooks/useCustomToast';
 import { createFileRoute } from '@tanstack/react-router';
 import { AttendanceService, EmployeesService } from '@/client';
-import type { AttendancePublic, EmployeePublic, ZKTecoDevicePublic } from '@/client/types.gen';
+
 import { AttendanceReports } from '@/components/Attendance/AttendanceReports';
 import { AttendanceRecords } from '@/components/Attendance/AttendanceRecords';
 import { LocationManagement } from '@/components/Attendance/LocationManagement';
@@ -29,8 +25,7 @@ const pulse = "transform 2s infinite"
 
 const AttendancePage: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [sortBy, setSortBy] = useState("check_in_time");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
   const [activeView, setActiveView] = useState<'records' | 'reports' | 'locations' | 'devices'>('records');
   const { showToast } = useCustomToast();
 
@@ -95,7 +90,7 @@ const AttendancePage: React.FC = () => {
     console.error("Error loading devices:", devicesError)
   }
 
-  const isLoading = attendancesLoading || employeesLoading || devicesLoading;
+
 
   return (
     <Box minH="100vh" bg={bgColor}>

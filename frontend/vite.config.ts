@@ -15,22 +15,16 @@ export default defineConfig({
     target: "es2015",
     outDir: "dist",
     sourcemap: false,
-    minify: "terser",
+    minify: "esbuild",
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ["react", "react-dom"],
           router: ["@tanstack/react-router"],
-          ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select"],
         },
       },
     },
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+
   },
   server: {
     port: 5173,
@@ -43,4 +37,6 @@ export default defineConfig({
   optimizeDeps: {
     include: ["react", "react-dom", "@tanstack/react-router"],
   },
+  // Ensure proper base path for Cloudflare Pages
+  base: "/",
 })

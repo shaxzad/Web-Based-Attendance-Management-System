@@ -4,12 +4,7 @@ import { useCallback } from 'react';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-interface ToastOptions {
-  title: string;
-  message: string;
-  type: ToastType;
-  duration?: number;
-}
+
 
 export const useCustomToast = () => {
   const showToast = useCallback((title: string, message: string, type: ToastType = 'info', duration: number = 5000) => {

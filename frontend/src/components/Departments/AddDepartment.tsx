@@ -24,7 +24,7 @@ const AddDepartment = () => {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<DepartmentCreate>({
     mode: "onBlur",
     criteriaMode: "all",

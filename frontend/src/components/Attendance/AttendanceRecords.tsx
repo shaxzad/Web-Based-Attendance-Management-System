@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import {
   Box,
@@ -9,13 +9,12 @@ import {
   Button,
   Input,
   Flex,
-  Spinner,
-  Select,
+
   useDisclosure,
 } from "@chakra-ui/react";
 import { useCustomToast } from '@/hooks/useCustomToast';
 import { AttendanceService, EmployeesService } from '@/client';
-import type { AttendancePublic, EmployeePublic, ZKTecoDevicePublic } from '@/client/types.gen';
+import type { AttendancePublic } from '@/client/types.gen';
 import { AppTable } from '@/components/ui/table';
 import { AppModal } from '@/components/ui/modal';
 
@@ -29,9 +28,9 @@ export const AttendanceRecords: React.FC<AttendanceRecordsProps> = ({ onRefresh 
   const [employeeFilter, setEmployeeFilter] = useState("");
   const [deviceFilter, setDeviceFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [selectedAttendance, setSelectedAttendance] = useState<AttendancePublic | null>(null);
-  const { showToast } = useCustomToast();
+
 
   // Fetch data
   const {
@@ -86,7 +85,7 @@ export const AttendanceRecords: React.FC<AttendanceRecordsProps> = ({ onRefresh 
     return device?.location || 'Unknown Location';
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | undefined) => {
     const colorScheme = status === 'present' ? 'green' : 
                        status === 'absent' ? 'red' : 
                        status === 'late' ? 'yellow' : 'gray';
@@ -109,7 +108,7 @@ export const AttendanceRecords: React.FC<AttendanceRecordsProps> = ({ onRefresh 
     return new Date(dateTime).toLocaleTimeString();
   };
 
-  const calculateWorkHours = (checkIn: string, checkOut?: string) => {
+  const calculateWorkHours = (checkIn: string, checkOut?: string | null) => {
     if (!checkOut) return '-';
     const checkInTime = new Date(checkIn);
     const checkOutTime = new Date(checkOut);
@@ -182,13 +181,13 @@ export const AttendanceRecords: React.FC<AttendanceRecordsProps> = ({ onRefresh 
     {
       key: 'status',
       label: 'Status',
-      render: (value: any, row: AttendancePublic) => getStatusBadge(row.status),
+      render: (value: any, row: AttendancePublic) => getStatusBadge(row.status || 'unknown'),
     },
     {
       key: 'work_hours',
       label: 'Work Hours',
       render: (value: any, row: AttendancePublic) => 
-        calculateWorkHours(row.check_in_time, row.check_out_time),
+        calculateWorkHours(row.check_in_time, row.check_out_time || undefined),
     },
     {
       key: 'actions',
@@ -236,10 +235,7 @@ export const AttendanceRecords: React.FC<AttendanceRecordsProps> = ({ onRefresh 
     })),
   ];
 
-  const handleViewDetails = (attendance: AttendancePublic) => {
-    setSelectedAttendance(attendance);
-    onOpen();
-  };
+
 
   if (attendancesError) {
     console.error("Error loading attendances:", attendancesError);
@@ -421,13 +417,13 @@ export const AttendanceRecords: React.FC<AttendanceRecordsProps> = ({ onRefresh 
             <HStack gap={6}>
               <Box flex={1}>
                 <Text fontSize="sm" color="gray.500" mb={1}>Status</Text>
-                {getStatusBadge(selectedAttendance.status)}
+                {getStatusBadge(selectedAttendance.status || 'unknown')}
               </Box>
               
               <Box flex={1}>
                 <Text fontSize="sm" color="gray.500" mb={1}>Work Hours</Text>
                 <Text fontSize="md" fontWeight="medium">
-                  {calculateWorkHours(selectedAttendance.check_in_time, selectedAttendance.check_out_time)}
+                  {calculateWorkHours(selectedAttendance.check_in_time, selectedAttendance.check_out_time || undefined)}
                 </Text>
               </Box>
             </HStack>

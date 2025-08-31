@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Controller, type SubmitHandler, useForm } from "react-hook-form"
+import { type SubmitHandler, useForm } from "react-hook-form"
 
 import { type ItemCreate, ItemsService } from "@/client"
 import type { ApiError } from "@/client/core/ApiError"
@@ -7,13 +7,13 @@ import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 import {
   Button,
-  Flex,
+
   Input,
   Text,
   VStack,
 } from "@chakra-ui/react"
 import { useState } from "react"
-import { Checkbox } from "../ui/checkbox"
+
 import { AppModal } from "../ui/modal"
 import { Field } from "../ui/field"
 
@@ -26,12 +26,12 @@ const AddItem = () => {
   const queryClient = useQueryClient()
   const { showSuccessToast } = useCustomToast()
   const {
-    control,
+
     register,
     handleSubmit,
     reset,
     getValues,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<ItemCreateForm>({
     mode: "onBlur",
     criteriaMode: "all",

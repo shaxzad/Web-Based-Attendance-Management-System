@@ -35,7 +35,7 @@ const AddEmployee = () => {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<EmployeeCreate>({
     mode: "onBlur",
     criteriaMode: "all",

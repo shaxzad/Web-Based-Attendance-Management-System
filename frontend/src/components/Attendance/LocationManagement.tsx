@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Box,
@@ -9,10 +9,7 @@ import {
   Button,
   Input,
   Flex,
-  Spinner,
   useDisclosure,
-  Grid,
-  GridItem,
 } from "@chakra-ui/react";
 import { useCustomToast } from '@/hooks/useCustomToast';
 import { AttendanceService } from '@/client';
@@ -40,7 +37,7 @@ export const LocationManagement: React.FC<LocationManagementProps> = ({ onRefres
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { showToast } = useCustomToast();
@@ -73,7 +70,7 @@ export const LocationManagement: React.FC<LocationManagementProps> = ({ onRefres
           city: 'Unknown',
           country: 'Unknown',
           postalCode: 'Unknown',
-          description: device.description,
+          description: device.description || undefined,
           deviceCount: 0,
           isActive: true,
         });
@@ -91,7 +88,7 @@ export const LocationManagement: React.FC<LocationManagementProps> = ({ onRefres
     return devices.filter(device => device.location === locationName);
   };
 
-  const getDeviceStatusBadge = (status: string) => {
+  const getDeviceStatusBadge = (status: string | undefined) => {
     const colorScheme = status === 'online' ? 'green' : 
                        status === 'offline' ? 'red' : 'yellow';
     return (
@@ -200,7 +197,7 @@ export const LocationManagement: React.FC<LocationManagementProps> = ({ onRefres
     {
       key: 'status',
       label: 'Status',
-      render: (value: any, row: ZKTecoDevicePublic) => getDeviceStatusBadge(row.device_status),
+      render: (value: any, row: ZKTecoDevicePublic) => getDeviceStatusBadge(row.device_status || 'unknown'),
     },
     {
       key: 'last_sync',
