@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.deploy.json && vite build && cp _redirects dist/",
+    "build": "npx tsc -p tsconfig.deploy.json && vite build && cp _redirects dist/",
     "lint": "biome check --apply-unsafe --no-errors-on-unmatched --files-ignore-unknown=true ./",
     "preview": "vite preview",
     "generate-client": "openapi-ts",
