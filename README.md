@@ -15,13 +15,13 @@
   - 🤖 An automatically generated frontend client.
   - 🧪 [Playwright](https://playwright.dev) for End-to-End testing.
   - 🦇 Dark mode support.
-- 🐋 [Docker Compose](https://www.docker.com) for development and production.
+
 - 🔒 Secure password hashing by default.
 - 🔑 JWT (JSON Web Token) authentication.
 - 📫 Email based password recovery.
 - ✅ Tests with [Pytest](https://pytest.org).
 - 📞 [Traefik](https://traefik.io) as a reverse proxy / load balancer.
-- 🚢 Deployment instructions using Docker Compose, including how to set up a frontend Traefik proxy to handle automatic HTTPS certificates.
+- 🚢 Deployment instructions for local and cloud environments.
 - 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions.
 
 ### Dashboard Login
@@ -201,7 +201,7 @@ But don't worry, you can just update any of that in the `.env` files afterwards.
 The input variables, with their default values (some auto generated) are:
 
 - `project_name`: (default: `"FastAPI Project"`) The name of the project, shown to API users (in .env).
-- `stack_name`: (default: `"fastapi-project"`) The name of the stack used for Docker Compose labels and project name (no spaces, no periods) (in .env).
+- `stack_name`: (default: `"fastapi-project"`) The name of the project stack (no spaces, no periods) (in .env).
 - `secret_key`: (default: `"changethis"`) The secret key for the project, used for security, stored in .env, you can generate one with the method above.
 - `first_superuser`: (default: `"admin@example.com"`) The email of the first superuser (in .env).
 - `first_superuser_password`: (default: `"changethis"`) The password of the first superuser (in .env).
@@ -228,7 +228,7 @@ Deployment docs: [deployment.md](./deployment.md).
 
 General development docs: [development.md](./development.md).
 
-This includes using Docker Compose, custom local domains, `.env` configurations, etc.
+This includes local development setup, `.env` configurations, etc.
 
 ## Release Notes
 
