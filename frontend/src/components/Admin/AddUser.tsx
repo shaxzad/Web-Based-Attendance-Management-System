@@ -31,7 +31,7 @@ const AddUser = () => {
     handleSubmit,
     reset,
     getValues,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<UserCreateForm>({
     mode: "onBlur",
     criteriaMode: "all",

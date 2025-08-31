@@ -93,7 +93,7 @@ export const SelectTrigger: React.FC<SelectTriggerProps & {
   isOpen?: boolean;
   selectedValue?: string;
   placeholder?: string;
-}> = ({ children, className, onClick, isOpen, selectedValue, placeholder }) => {
+}> = ({ className, onClick, isOpen, selectedValue, placeholder }) => {
   return (
     <div
       className={cn(

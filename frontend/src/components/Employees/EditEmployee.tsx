@@ -7,7 +7,7 @@ import {
   Input,
   Text,
   VStack,
-  Select,
+
 } from "@chakra-ui/react"
 import { useState } from "react"
 

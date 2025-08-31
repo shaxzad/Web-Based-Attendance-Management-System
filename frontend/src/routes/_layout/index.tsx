@@ -27,7 +27,7 @@ import {
   LineChart,
   Line
 } from "recharts"
-import { FiUsers, FiTrendingUp, FiActivity, FiCalendar } from "react-icons/fi"
+import { FiUsers, FiActivity, FiCalendar } from "react-icons/fi"
 import { FaBuilding, FaRegCalendarAlt } from "react-icons/fa"
 
 import { DepartmentsService, EmployeesService, HolidaysService } from "@/client"
@@ -73,7 +73,7 @@ function Dashboard() {
   const totalHolidays = holidays.length
   const publicHolidays = holidays.filter(h => h.holiday_type === 'public').length
   const companyHolidays = holidays.filter(h => h.holiday_type === 'company').length
-  const recurringHolidays = holidays.filter(h => h.is_recurring).length
+
   
   // Get current year holidays
   const currentYear = new Date().getFullYear()

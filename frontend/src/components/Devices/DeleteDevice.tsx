@@ -1,6 +1,6 @@
-import { Button, Text } from "@chakra-ui/react"
+import { Text } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+
 import { useForm } from "react-hook-form"
 
 import { AttendanceService } from "@/client"
@@ -54,7 +54,7 @@ const DeleteDevice = ({ device, isOpen, onClose }: DeleteDeviceProps) => {
       onSubmit={handleSubmit(onSubmit)}
       isLoading={isSubmitting}
       size="md"
-      submitButtonProps={{ colorScheme: "red" }}
+
     >
       <Text mb={4}>
         Are you sure you want to delete the device <strong>"{device.device_name}"</strong>?

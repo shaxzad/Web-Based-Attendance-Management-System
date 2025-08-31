@@ -8,13 +8,12 @@ import {
   Heading,
   Text,
   VStack,
-  Flex,
-  Button,
+
   IconButton,
 } from "@chakra-ui/react"
 import { EmployeesService, DepartmentsService } from "@/client"
 import type { EmployeePublic, DepartmentPublic } from "@/client/types.gen"
-import { handleError } from "@/utils"
+
 import AddEmployee from "@/components/Employees/AddEmployee"
 import EmployeeActions from "@/components/Employees/EmployeeActions"
 import { AppTable, createStatusColumn } from "@/components/ui/table"
@@ -28,9 +27,9 @@ const pulse = "transform 2s infinite"
 const Employees = () => {
   // Filter states
   const [searchTerm, setSearchTerm] = useState("")
-  const [searchBy, setSearchBy] = useState("name") // name, cnic, employee_id
+  const [searchBy] = useState("name") // name, cnic, employee_id
   const [statusFilter, setStatusFilter] = useState("all") // all, active, inactive
-  const [departmentFilter, setDepartmentFilter] = useState("all")
+  const [departmentFilter] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
 
   // Color values

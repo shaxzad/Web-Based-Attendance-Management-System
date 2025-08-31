@@ -3,9 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useState, useMemo } from "react"
 
 import {
-  Badge,
   Box,
-  Button,
   Container,
   HStack,
   Heading,
@@ -16,7 +14,7 @@ import {
 
 import { DepartmentsService } from "@/client"
 import type { DepartmentPublic } from "@/client/types.gen"
-import { handleError } from "@/utils"
+
 import AddDepartment from "@/components/Departments/AddDepartment"
 import DepartmentActions from "@/components/Departments/DepartmentActions"
 import { AppTable, createStatusColumn } from "@/components/ui/table"

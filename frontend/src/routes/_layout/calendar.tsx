@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react"
+import { useMemo, useState, useCallback } from "react"
 import {
   Box,
   Button,
@@ -13,7 +13,7 @@ import {
   Badge
 } from "@chakra-ui/react"
 import { Calendar, dateFnsLocalizer, Views } from "react-big-calendar"
-import { addDays, format, parse, startOfWeek, getDay } from "date-fns"
+import { format, parse, startOfWeek, getDay } from "date-fns"
 import { enUS } from "date-fns/locale/en-US"
 import "react-big-calendar/lib/css/react-big-calendar.css"
 import "./calendar.css"
@@ -380,7 +380,7 @@ function HolidayCalendar() {
               <Button
                 colorScheme="red"
                 onClick={handleDelete}
-                isLoading={deleteMutation.isPending}
+                loading={deleteMutation.isPending}
                 size="sm"
               >
                 Delete Holiday

@@ -181,7 +181,7 @@ const DevicesPage: React.FC = () => {
       key: 'actions', 
       label: 'Actions',
       width: "120px",
-      render: (value: any, row: ZKTecoDevicePublic) => (
+      render: (_value: any, row: ZKTecoDevicePublic) => (
         <DeviceActions
           device={row}
           onViewDetails={() => setSelectedDevice(row)}

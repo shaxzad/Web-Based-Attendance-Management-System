@@ -1,0 +1,19 @@
+name = "attendance-management-api"
+main = "main.py"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "attendance-management-api"
+
+[env.staging]
+name = "attendance-management-api-staging"
+
+# Environment variables (you'll need to set these in Cloudflare dashboard)
+[vars]
+ENVIRONMENT = "production"
+
+# Secrets (set these via wrangler secret put)
+# SECRET_KEY
+# POSTGRES_PASSWORD
+# FIRST_SUPERUSER_PASSWORD

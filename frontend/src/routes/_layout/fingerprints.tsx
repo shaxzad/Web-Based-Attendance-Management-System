@@ -34,8 +34,9 @@ const FingerprintsPage = () => {
   // ZKTeco device integration state
   const [selectedDevice, setSelectedDevice] = useState("")
   const [deviceUsers, setDeviceUsers] = useState<any[]>([])
-  const [isDeviceConnected, setIsDeviceConnected] = useState(false)
+
   const [availableDevices, setAvailableDevices] = useState<any[]>([])
+  const [isDeviceConnected, setIsDeviceConnected] = useState(false)
 
   // Fetch employees for dropdown
   const { data: employees } = useQuery({
@@ -107,7 +108,7 @@ const FingerprintsPage = () => {
 
   // ZKTeco device mutations (placeholder implementations)
   const captureFromDeviceMutation = useMutation({
-    mutationFn: async ({ deviceId, employeeId, fingerprintType, position }: any) => {
+    mutationFn: async ({ deviceId: _deviceId, employeeId: _employeeId, fingerprintType: _fingerprintType, position: _position }: any) => {
       // Placeholder implementation
       await new Promise(resolve => setTimeout(resolve, 2000))
       return { success: true, fingerprint: { id: "new-fingerprint-id" } }
@@ -121,7 +122,7 @@ const FingerprintsPage = () => {
   })
 
   const verifyOnDeviceMutation = useMutation({
-    mutationFn: async ({ deviceId, employeeId }: any) => {
+    mutationFn: async ({ deviceId: _deviceId, employeeId: _employeeId }: any) => {
       // Placeholder implementation
       await new Promise(resolve => setTimeout(resolve, 1000))
       return { verified: true }
@@ -139,7 +140,7 @@ const FingerprintsPage = () => {
   })
 
   const syncFromDeviceMutation = useMutation({
-    mutationFn: async ({ deviceId }: any) => {
+    mutationFn: async ({ deviceId: _deviceId }: any) => {
       // Placeholder implementation
       await new Promise(resolve => setTimeout(resolve, 3000))
       return { fingerprints_synced: 5, status: "success" }
@@ -153,7 +154,7 @@ const FingerprintsPage = () => {
   })
 
   const enrollOnDeviceMutation = useMutation({
-    mutationFn: async ({ deviceId, employeeId, fingerprintType, position }: any) => {
+    mutationFn: async ({ deviceId: _deviceId, employeeId: _employeeId, fingerprintType: _fingerprintType, position: _position }: any) => {
       // Placeholder implementation
       await new Promise(resolve => setTimeout(resolve, 2000))
       return { success: true }
@@ -167,7 +168,7 @@ const FingerprintsPage = () => {
   })
 
   const getDeviceUsersMutation = useMutation({
-    mutationFn: async ({ deviceId }: any) => {
+    mutationFn: async ({ deviceId: _deviceId }: any) => {
       // Placeholder implementation
       await new Promise(resolve => setTimeout(resolve, 1000))
       return { users: [], count: 0 }

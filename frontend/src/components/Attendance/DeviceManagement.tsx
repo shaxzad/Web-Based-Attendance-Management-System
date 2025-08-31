@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Box,
@@ -9,10 +9,8 @@ import {
   Button,
   Input,
   Flex,
-  Spinner,
   useDisclosure,
   Grid,
-  GridItem,
 } from "@chakra-ui/react";
 import { useCustomToast } from '@/hooks/useCustomToast';
 import { AttendanceService } from '@/client';
@@ -28,7 +26,7 @@ export const DeviceManagement: React.FC<DeviceManagementProps> = ({ onRefresh })
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open: isOpen, onOpen, onClose } = useDisclosure();
   const [selectedDevice, setSelectedDevice] = useState<ZKTecoDevicePublic | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { showToast } = useCustomToast();
@@ -92,7 +90,7 @@ export const DeviceManagement: React.FC<DeviceManagementProps> = ({ onRefresh })
   });
 
   // Helper functions
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | undefined) => {
     const colorScheme = status === 'online' ? 'green' : 
                        status === 'offline' ? 'red' : 
                        status === 'error' ? 'orange' : 'gray';
@@ -164,14 +162,14 @@ export const DeviceManagement: React.FC<DeviceManagementProps> = ({ onRefresh })
     {
       key: 'status',
       label: 'Status',
-      render: (value: any, row: ZKTecoDevicePublic) => getStatusBadge(row.device_status),
+      render: (value: any, row: ZKTecoDevicePublic) => getStatusBadge(row.device_status || 'unknown'),
     },
     {
       key: 'last_sync',
       label: 'Last Sync',
       render: (value: any, row: ZKTecoDevicePublic) => (
         <VStack align="start" gap={0}>
-          <Text fontSize="sm">{getLastSyncText(row.last_sync)}</Text>
+          <Text fontSize="sm">{getLastSyncText(row.last_sync || undefined)}</Text>
           {row.last_sync && (
             <Text fontSize="xs" color="gray.500">
               {formatDateTime(row.last_sync)}
@@ -206,7 +204,7 @@ export const DeviceManagement: React.FC<DeviceManagementProps> = ({ onRefresh })
             size="sm"
             variant="outline"
             onClick={() => handleSyncDevice(row.id)}
-            isLoading={syncDeviceMutation.isPending}
+            loading={syncDeviceMutation.isPending}
           >
             Sync
           </Button>
@@ -417,7 +415,7 @@ export const DeviceManagement: React.FC<DeviceManagementProps> = ({ onRefresh })
                 <Button
                   colorScheme="blue"
                   onClick={() => handleConnectDevice(selectedDevice.id)}
-                  isLoading={connectDeviceMutation.isPending}
+                  loading={connectDeviceMutation.isPending}
                   size="lg"
                 >
                   Connect Device
@@ -425,7 +423,7 @@ export const DeviceManagement: React.FC<DeviceManagementProps> = ({ onRefresh })
                 <Button
                   colorScheme="green"
                   onClick={() => handleSyncDevice(selectedDevice.id)}
-                  isLoading={syncDeviceMutation.isPending}
+                  loading={syncDeviceMutation.isPending}
                   size="lg"
                 >
                   Sync Attendance
@@ -433,7 +431,7 @@ export const DeviceManagement: React.FC<DeviceManagementProps> = ({ onRefresh })
                 <Button
                   colorScheme="orange"
                   onClick={() => handleRestartDevice(selectedDevice.id)}
-                  isLoading={restartDeviceMutation.isPending}
+                  loading={restartDeviceMutation.isPending}
                   size="lg"
                 >
                   Restart Device
@@ -441,7 +439,7 @@ export const DeviceManagement: React.FC<DeviceManagementProps> = ({ onRefresh })
                 <Button
                   colorScheme="red"
                   onClick={() => handleClearAttendance(selectedDevice.id)}
-                  isLoading={clearAttendanceMutation.isPending}
+                  loading={clearAttendanceMutation.isPending}
                   size="lg"
                 >
                   Clear Attendance

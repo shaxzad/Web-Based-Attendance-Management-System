@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
   IconButton,
   Box,
@@ -132,16 +132,12 @@ const DepartmentActions = ({ department }: DepartmentActionsProps) => {
       {showEditModal && (
         <EditDepartment 
           department={department} 
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
         />
       )}
       
       {showDeleteModal && (
         <DeleteDepartment 
-          department={department}
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
+          id={department.id}
         />
       )}
     </Box>

@@ -21,7 +21,6 @@ export default defineConfig({
         manualChunks: {
           vendor: ["react", "react-dom"],
           router: ["@tanstack/react-router"],
-          ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select"],
         },
       },
     },
@@ -43,4 +42,6 @@ export default defineConfig({
   optimizeDeps: {
     include: ["react", "react-dom", "@tanstack/react-router"],
   },
+  // Ensure proper base path for Cloudflare Pages
+  base: "/",
 })

@@ -49,7 +49,7 @@ export const AppTable: React.FC<AppTableProps> = ({
   filterValue,
   onFilterChange,
   onShowFilters,
-  showFilters = false,
+
   emptyMessage = "No data available",
   actions,
 }) => {
