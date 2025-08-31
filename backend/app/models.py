@@ -136,6 +136,7 @@ class Employee(EmployeeBase, table=True):
     department: Department = Relationship(back_populates="employees")
     user: User | None = Relationship(back_populates="employee")
     attendances: list["Attendance"] = Relationship(back_populates="employee", cascade_delete=True)
+    fingerprints: list["Fingerprint"] = Relationship(back_populates="employee", cascade_delete=True)
 
 
 class EmployeePublic(EmployeeBase):
@@ -149,6 +150,77 @@ class EmployeePublic(EmployeeBase):
 class EmployeesPublic(SQLModel):
     data: list[EmployeePublic]
     count: int
+
+
+# Fingerprint Management Models
+class FingerprintBase(SQLModel):
+    employee_id: uuid.UUID = Field(foreign_key="employee.id", nullable=False)
+    fingerprint_type: str = Field(max_length=20)  # thumb, index, middle, ring, pinky
+    fingerprint_position: int = Field(ge=1, le=5)  # Position 1-5 for each finger type
+    fingerprint_data: str = Field(max_length=1000000)  # Base64 encoded fingerprint image
+    fingerprint_format: str = Field(default="base64", max_length=20)  # base64, binary, etc.
+    quality_score: float | None = Field(default=None, ge=0, le=100)  # Quality score 0-100
+    is_active: bool = Field(default=True)
+    notes: str | None = Field(default=None, max_length=500)
+
+
+class FingerprintCreate(FingerprintBase):
+    pass
+
+
+class FingerprintUpdate(SQLModel):
+    fingerprint_type: str | None = Field(default=None, max_length=20)
+    fingerprint_position: int | None = Field(default=None, ge=1, le=5)
+    fingerprint_data: str | None = Field(default=None, max_length=1000000)
+    fingerprint_format: str | None = Field(default=None, max_length=20)
+    quality_score: float | None = Field(default=None, ge=0, le=100)
+    is_active: bool | None = None
+    notes: str | None = Field(default=None, max_length=500)
+
+
+class Fingerprint(FingerprintBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Relationships
+    employee: Employee = Relationship(back_populates="fingerprints")
+
+
+class FingerprintPublic(FingerprintBase):
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+
+class FingerprintsPublic(SQLModel):
+    data: list[FingerprintPublic]
+    count: int
+
+
+# Employee Fingerprint Summary
+class EmployeeFingerprintSummary(SQLModel):
+    employee_id: uuid.UUID
+    employee_name: str
+    total_fingerprints: int
+    thumb_fingerprints: int
+    index_fingerprints: int
+    middle_fingerprints: int
+    ring_fingerprints: int
+    pinky_fingerprints: int
+    last_updated: datetime | None = None
+
+
+# Bulk Fingerprint Operations
+class BulkFingerprintCreate(SQLModel):
+    employee_id: uuid.UUID
+    fingerprints: list[FingerprintCreate]
+
+
+class BulkFingerprintResponse(SQLModel):
+    success_count: int
+    failed_count: int
+    errors: list[str]
 
 
 # Shared properties

@@ -29,6 +29,7 @@ dependencies = [
     "schedule>=1.2.0",
     "pyzk>=0.9",
     "zk>=0.9.4",
+    "pillow>=11.3.0",
 ]
 
 [tool.uv]

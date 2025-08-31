@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, date, timedelta
-from typing import Any
+from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlmodel import Session
@@ -283,11 +283,163 @@ def delete_zkteco_device(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid device ID")
     
-    success = crud.delete_zkteco_device(session=db, device_id=device_uuid)
-    if not success:
+    # Get device details before deletion for better error messages
+    device = crud.get_zkteco_device(session=db, device_id=device_uuid)
+    if not device:
         raise HTTPException(status_code=404, detail="Device not found")
     
-    return {"message": "Device deleted successfully"}
+    device_name = device.device_name
+    device_ip = device.device_ip
+    
+    # Check if device is currently connected
+    manager = ZKTecoManager(db)
+    service = manager.get_service(device.id)
+    
+    # Disconnect device if connected
+    if device.device_id in service.devices:
+        service.disconnect_device(device.device_id)
+    
+    # Delete the device
+    success = crud.delete_zkteco_device(session=db, device_id=device_uuid)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete device")
+    
+    return {
+        "message": f"Device '{device_name}' ({device_ip}) deleted successfully",
+        "deleted_device": {
+            "name": device_name,
+            "ip": device_ip,
+            "id": str(device_uuid)
+        }
+    }
+
+
+@router.delete("/devices/")
+def delete_multiple_devices(
+    *,
+    db: Session = Depends(deps.get_db),
+    device_ids: List[str],
+) -> Any:
+    """
+    Delete multiple ZKTeco devices.
+    """
+    if not device_ids:
+        raise HTTPException(status_code=400, detail="No device IDs provided")
+    
+    deleted_devices = []
+    failed_deletions = []
+    
+    for device_id in device_ids:
+        try:
+            device_uuid = uuid.UUID(device_id)
+            device = crud.get_zkteco_device(session=db, device_id=device_uuid)
+            
+            if device:
+                device_name = device.device_name
+                device_ip = device.device_ip
+                
+                # Disconnect device if connected
+                manager = ZKTecoManager(db)
+                service = manager.get_service(device.id)
+                if device.device_id in service.devices:
+                    service.disconnect_device(device.device_id)
+                
+                # Delete the device
+                success = crud.delete_zkteco_device(session=db, device_id=device_uuid)
+                if success:
+                    deleted_devices.append({
+                        "id": device_id,
+                        "name": device_name,
+                        "ip": device_ip
+                    })
+                else:
+                    failed_deletions.append({
+                        "id": device_id,
+                        "error": "Failed to delete device"
+                    })
+            else:
+                failed_deletions.append({
+                    "id": device_id,
+                    "error": "Device not found"
+                })
+                
+        except ValueError:
+            failed_deletions.append({
+                "id": device_id,
+                "error": "Invalid device ID format"
+            })
+        except Exception as e:
+            failed_deletions.append({
+                "id": device_id,
+                "error": str(e)
+            })
+    
+    return {
+        "message": f"Deleted {len(deleted_devices)} devices, {len(failed_deletions)} failed",
+        "deleted_devices": deleted_devices,
+        "failed_deletions": failed_deletions
+    }
+
+
+@router.delete("/devices/cleanup/all")
+def delete_all_devices(
+    *,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Delete all ZKTeco devices (use with caution).
+    """
+    # Get all devices
+    devices = crud.get_zkteco_devices(session=db)
+    
+    if not devices:
+        return {
+            "message": "No devices found to delete",
+            "deleted_count": 0
+        }
+    
+    deleted_devices = []
+    failed_deletions = []
+    
+    for device in devices:
+        try:
+            device_name = device.device_name
+            device_ip = device.device_ip
+            
+            # Disconnect device if connected
+            manager = ZKTecoManager(db)
+            service = manager.get_service(device.id)
+            if device.device_id in service.devices:
+                service.disconnect_device(device.device_id)
+            
+            # Delete the device
+            success = crud.delete_zkteco_device(session=db, device_id=device.id)
+            if success:
+                deleted_devices.append({
+                    "id": str(device.id),
+                    "name": device_name,
+                    "ip": device_ip
+                })
+            else:
+                failed_deletions.append({
+                    "id": str(device.id),
+                    "name": device_name,
+                    "error": "Failed to delete device"
+                })
+                
+        except Exception as e:
+            failed_deletions.append({
+                "id": str(device.id),
+                "name": device.device_name,
+                "error": str(e)
+            })
+    
+    return {
+        "message": f"Deleted {len(deleted_devices)} devices, {len(failed_deletions)} failed",
+        "deleted_count": len(deleted_devices),
+        "deleted_devices": deleted_devices,
+        "failed_deletions": failed_deletions
+    }
 
 
 # Device Management Routes
@@ -309,6 +461,13 @@ def connect_device(
     if not device:
         raise HTTPException(status_code=404, detail="Device not found")
     
+    # Check device status first
+    if device.device_status == "offline":
+        raise HTTPException(
+            status_code=503, 
+            detail=f"Device {device.device_name} is offline. Please check: 1) Device is powered on, 2) Ethernet cable is connected, 3) Device is in network mode"
+        )
+    
     manager = ZKTecoManager(db)
     service = manager.get_service(device.id)
     success = service.connect_device(device)
@@ -316,7 +475,18 @@ def connect_device(
     if success:
         return {"message": f"Successfully connected to device {device.device_name}"}
     else:
-        raise HTTPException(status_code=500, detail=f"Failed to connect to device {device.device_name}")
+        # Get the current device status to provide better error message
+        device = crud.get_zkteco_device(session=db, device_id=device_uuid)
+        if device.device_status == "offline":
+            raise HTTPException(
+                status_code=503,
+                detail=f"Device {device.device_name} is not reachable. Please check: 1) Device is powered on, 2) Ethernet cable is connected, 3) Device is in network mode, 4) Network settings are correct"
+            )
+        else:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to connect to device {device.device_name}. Device may be busy or there's a communication error."
+            )
 
 
 @router.post("/devices/{device_id}/sync")
@@ -368,6 +538,80 @@ def sync_all_devices(
         "successful_syncs": success_count,
         "device_results": results
     }
+
+
+@router.get("/devices/{device_id}/status")
+def get_device_status(
+    *,
+    db: Session = Depends(deps.get_db),
+    device_id: str,
+) -> Any:
+    """
+    Check the current status of a ZKTeco device.
+    """
+    try:
+        device_uuid = uuid.UUID(device_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid device ID")
+    
+    device = crud.get_zkteco_device(session=db, device_id=device_uuid)
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+    
+    # Check network connectivity
+    import socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(5)
+    result = sock.connect_ex((device.device_ip, device.device_port))
+    sock.close()
+    
+    network_status = "online" if result == 0 else "offline"
+    
+    return {
+        "device_name": device.device_name,
+        "device_ip": device.device_ip,
+        "device_port": device.device_port,
+        "database_status": device.device_status,
+        "network_status": network_status,
+        "last_sync": device.last_sync,
+        "is_active": device.is_active,
+        "network_error_code": result if result != 0 else None,
+        "troubleshooting_tips": get_troubleshooting_tips(result)
+    }
+
+
+def get_troubleshooting_tips(error_code: int) -> list:
+    """Get troubleshooting tips based on error code"""
+    tips = []
+    
+    if error_code == 65:
+        tips = [
+            "Check if the device is powered on",
+            "Verify the Ethernet cable is properly connected",
+            "Try a different Ethernet cable",
+            "Check if the device's network port has activity lights"
+        ]
+    elif error_code == 111:
+        tips = [
+            "Ensure the device is in Network Mode (not USB Mode)",
+            "Check device network settings",
+            "Try resetting the device to factory defaults"
+        ]
+    elif error_code == 113:
+        tips = [
+            "Check network routing configuration",
+            "Verify switch/router is working properly",
+            "Try connecting the device directly to your computer"
+        ]
+    else:
+        tips = [
+            "Check device power and connections",
+            "Verify device is in network mode",
+            "Check network settings",
+            "Try connecting from a different computer"
+        ]
+    
+    return tips
 
 
 @router.get("/devices/{device_id}/info")

@@ -2,7 +2,71 @@
 __pycache__
 app.egg-info
 *.pyc
+*.pyo
+*.pyd
+.Python
 .mypy_cache
 .coverage
 htmlcov
 .venv
+.pytest_cache
+.tox
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis
+
+# Development and testing files
+test_*.py
+debug_*.py
+*_test.py
+*_tests.py
+check_*.py
+monitor_*.py
+fix_*.py
+network_*.py
+device_manager.py
+
+# Documentation and guides
+*.md
+ZKTECO_*.md
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Environment files
+.env.local
+.env.development
+.env.test
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
