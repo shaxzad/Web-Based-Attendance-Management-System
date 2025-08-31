@@ -9,8 +9,8 @@
     "lint": "biome check --apply-unsafe --no-errors-on-unmatched --files-ignore-unknown=true ./",
     "preview": "vite preview",
     "generate-client": "openapi-ts",
-    "deploy:cloudflare": "wrangler deploy",
-    "deploy:cloudflare:staging": "wrangler deploy --env staging"
+    "deploy:cloudflare": "npm run build && wrangler pages deploy dist",
+    "deploy:cloudflare:staging": "npm run build && wrangler pages deploy dist --env staging"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.8.0",
