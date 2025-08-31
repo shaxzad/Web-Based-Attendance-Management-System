@@ -15,7 +15,7 @@ export default defineConfig({
     target: "es2015",
     outDir: "dist",
     sourcemap: false,
-    minify: "terser",
+    minify: "esbuild",
     rollupOptions: {
       output: {
         manualChunks: {
@@ -24,12 +24,7 @@ export default defineConfig({
         },
       },
     },
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+
   },
   server: {
     port: 5173,
