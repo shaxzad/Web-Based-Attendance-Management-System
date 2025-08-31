@@ -1,20 +1,10 @@
-import { Button, DialogTitle, Text } from "@chakra-ui/react"
+import { Button, Text } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { FiTrash2 } from "react-icons/fi"
 
 import { ItemsService } from "@/client"
-import {
-  DialogActionTrigger,
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogRoot,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { AppModal } from "@/components/ui/modal"
 import useCustomToast from "@/hooks/useCustomToast"
 
 const DeleteItem = ({ id }: { id: string }) => {
@@ -27,7 +17,7 @@ const DeleteItem = ({ id }: { id: string }) => {
   } = useForm()
 
   const deleteItem = async (id: string) => {
-    await ItemsService.deleteItem({ id: id })
+    await ItemsService.deleteItem({ id })
   }
 
   const mutation = useMutation({
@@ -48,56 +38,36 @@ const DeleteItem = ({ id }: { id: string }) => {
     mutation.mutate(id)
   }
 
+  const handleClose = () => {
+    setIsOpen(false)
+  }
+
   return (
-    <DialogRoot
-      size={{ base: "xs", md: "md" }}
-      placement="center"
-      role="alertdialog"
-      open={isOpen}
-      onOpenChange={({ open }) => setIsOpen(open)}
-    >
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" colorPalette="red">
-          <FiTrash2 fontSize="16px" />
-          Delete Item
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogCloseTrigger />
-          <DialogHeader>
-            <DialogTitle>Delete Item</DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            <Text mb={4}>
-              This item will be permanently deleted. Are you sure? You will not
-              be able to undo this action.
-            </Text>
-          </DialogBody>
-
-          <DialogFooter gap={2}>
-            <DialogActionTrigger asChild>
-              <Button
-                variant="subtle"
-                colorPalette="gray"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            </DialogActionTrigger>
-            <Button
-              variant="solid"
-              colorPalette="red"
-              type="submit"
-              loading={isSubmitting}
-            >
-              Delete
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </DialogRoot>
+    <>
+      <Button 
+        variant="ghost" 
+        size="sm" 
+        colorScheme="red"
+        onClick={() => setIsOpen(true)}
+      >
+        Delete Item
+      </Button>
+      
+      <AppModal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Delete Item"
+        submitText="Delete"
+        cancelText="Cancel"
+        onSubmit={handleSubmit(onSubmit)}
+        isLoading={isSubmitting}
+        size="md"
+      >
+        <Text mb={4}>
+          Are you sure you want to delete this item? This action cannot be undone.
+        </Text>
+      </AppModal>
+    </>
   )
 }
 

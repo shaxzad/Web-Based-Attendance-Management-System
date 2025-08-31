@@ -19,9 +19,20 @@ const UserMenu = () => {
       <Flex>
         <MenuRoot>
           <MenuTrigger asChild p={2}>
-            <Button data-testid="user-menu" variant="solid" maxW="sm" truncate>
-              <FaUserAstronaut fontSize="18" />
-              <Text>{user?.full_name || "User"}</Text>
+            <Button
+              data-testid="user-menu"
+              variant="solid"
+              maxW="sm"
+              truncate
+              fontWeight="bold"
+              fontSize="lg"
+              px={6}
+              py={4}
+            >
+              <Flex align="center" gap={2}>
+                <FaUserAstronaut fontSize="18" />
+                <Text>{user?.full_name || "User"}</Text>
+              </Flex>
             </Button>
           </MenuTrigger>
 

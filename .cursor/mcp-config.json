@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "mcp-server-postgres",
+      "args": [
+        "--connection-string",
+        "postgresql://postgres:passpass@localhost:5432/Attandance"
+      ],
+      "env": {
+        "PGPASSWORD": "passpass"
+      }
+    }
+  }
+} 

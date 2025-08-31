@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     FRONTEND_HOST: str = "http://localhost:5173"
-    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
+    ENVIRONMENT: Literal["local", "staging", "production"] = "production"
 
     BACKEND_CORS_ORIGINS: Annotated[
         list[AnyUrl] | str, BeforeValidator(parse_cors)
@@ -91,7 +91,27 @@ class Settings(BaseSettings):
     def emails_enabled(self) -> bool:
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
 
-    EMAIL_TEST_USER: EmailStr = "test@example.com"
+    # Production optimizations
+    DEBUG: bool = False
+    LOG_LEVEL: str = "INFO"
+    
+    # Security settings for production
+    SECURE_COOKIES: bool = True
+    SESSION_COOKIE_SECURE: bool = True
+    SESSION_COOKIE_HTTPONLY: bool = True
+    SESSION_COOKIE_SAMESITE: str = "Lax"
+    
+    # Rate limiting
+    RATE_LIMIT_PER_MINUTE: int = 60
+    
+    # File upload settings
+    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
+    ALLOWED_FILE_TYPES: list[str] = ["image/jpeg", "image/png", "image/gif"]
+    
+    # Cache settings
+    CACHE_TTL: int = 300  # 5 minutes
+    REDIS_URL: str | None = None
+
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
 

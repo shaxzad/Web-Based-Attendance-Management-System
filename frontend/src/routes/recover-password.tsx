@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { isLoggedIn } from "@/hooks/useAuth"
-import useCustomToast from "@/hooks/useCustomToast"
+import { useCustomToast } from "@/hooks/useCustomToast"
 import { emailPattern, handleError } from "@/utils"
 
 interface FormData {
@@ -87,7 +87,7 @@ function RecoverPassword() {
           />
         </InputGroup>
       </Field>
-      <Button variant="solid" type="submit" loading={isSubmitting}>
+              <Button variant="default" type="submit" loading={isSubmitting}>
         Continue
       </Button>
     </Container>

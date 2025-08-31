@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <rect width="400" height="120" fill="#f0f0f0"/>
+  <circle cx="60" cy="60" r="40" fill="#01411C"/>
+  <text x="60" y="70" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="white">IOM</text>
+  <text x="130" y="50" font-family="Arial" font-size="24" font-weight="bold" fill="#01411C">PAKISTAN</text>
+  <text x="130" y="80" font-family="Arial" font-size="12" fill="#666">International Organization for Migration</text>
+</svg> 
