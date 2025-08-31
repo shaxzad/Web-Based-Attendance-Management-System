@@ -5,23 +5,16 @@ services:
     plan: starter
     rootDir: backend
     buildCommand: |
-      python -m pip install --upgrade pip
-      pip install -r requirements.txt
+      pip install uv
+      uv sync --frozen
+      source .venv/bin/activate
       echo "Verifying alembic installation..."
       python -c "import alembic; print('Alembic is available')"
       echo "Build completed successfully"
-      echo "Python path: $PYTHONPATH"
-      echo "Current directory: $(pwd)"
-      echo "Python executable: $(which python)"
     startCommand: |
-      echo "Starting application..."
-      echo "Python path: $PYTHONPATH"
-      echo "Current directory: $(pwd)"
-      echo "Python executable: $(which python)"
-      echo "Running database migrations..."
-      python -m alembic upgrade head
-      echo "Starting uvicorn server..."
-      python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+      source .venv/bin/activate
+      alembic upgrade head
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.4
