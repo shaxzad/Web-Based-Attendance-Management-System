@@ -41,11 +41,11 @@ This guide will help you deploy your Attendance Management System to Render.com.
      ```bash
      pip install uv
      uv sync --frozen
-     uv run alembic upgrade head
+     .venv/bin/alembic upgrade head
      ```
    - **Start Command**: 
      ```bash
-     uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+     .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port $PORT
      ```
 
 ## Step 4: Configure Environment Variables
@@ -92,7 +92,7 @@ In your Render.com service settings, add these environment variables:
 ### Common Issues:
 
 1. **Build fails with "alembic: command not found"**
-   - Solution: Make sure you're using `uv run alembic upgrade head` in the build command
+   - Solution: Make sure you're using `.venv/bin/alembic upgrade head` in the build command
 
 2. **Database connection errors**
    - Check that all PostgreSQL environment variables are correctly set
