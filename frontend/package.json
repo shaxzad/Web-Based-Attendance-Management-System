@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.deploy.json && vite build",
+    "build": "tsc -p tsconfig.deploy.json && vite build && cp _redirects dist/",
     "lint": "biome check --apply-unsafe --no-errors-on-unmatched --files-ignore-unknown=true ./",
     "preview": "vite preview",
     "generate-client": "openapi-ts",
-    "deploy:cloudflare": "wrangler pages deploy dist",
-    "deploy:cloudflare:staging": "wrangler pages deploy dist --env staging"
+    "deploy:cloudflare": "wrangler deploy",
+    "deploy:cloudflare:staging": "wrangler deploy --env staging"
   },
   "dependencies": {
     "@chakra-ui/react": "^3.8.0",
