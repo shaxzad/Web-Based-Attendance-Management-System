@@ -16,6 +16,7 @@ import { AttendanceService } from '@/client';
 import type { ZKTecoDevicePublic } from '@/client/types.gen';
 import { AddDevice } from '@/components/Devices/AddDevice';
 import { DeviceDetails } from '@/components/Devices/DeviceDetails';
+import DeviceActions from '@/components/Devices/DeviceActions';
 import { AppTable, createStatusColumn } from '@/components/ui/table';
 
 // Animation styles
@@ -181,13 +182,10 @@ const DevicesPage: React.FC = () => {
       label: 'Actions',
       width: "120px",
       render: (value: any, row: ZKTecoDevicePublic) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSelectedDevice(row)}
-        >
-          View
-        </Button>
+        <DeviceActions
+          device={row}
+          onViewDetails={() => setSelectedDevice(row)}
+        />
       )
     }
   ]

@@ -10,7 +10,7 @@ from app.models import (
     Attendance, AttendanceCreate, AttendanceUpdate, Department, DepartmentCreate, DepartmentUpdate,
     Employee, EmployeeCreate, EmployeeUpdate, Item, ItemCreate, User, UserCreate, UserUpdate,
     Holiday, HolidayCreate, HolidayUpdate, ZKTecoDevice, ZKTecoDeviceCreate, ZKTecoDeviceUpdate,
-    DeviceSyncLog, DeviceSyncLogBase
+    DeviceSyncLog, DeviceSyncLogBase, Fingerprint, FingerprintCreate, FingerprintUpdate
 )
 
 
@@ -403,6 +403,79 @@ def delete_zkteco_device(*, session: Session, device_id: uuid.UUID) -> bool:
     session.delete(device)
     session.commit()
     return True
+
+
+# Fingerprint CRUD operations
+def create_fingerprint(*, session: Session, fingerprint_in: FingerprintCreate) -> Fingerprint:
+    db_fingerprint = Fingerprint.model_validate(fingerprint_in)
+    session.add(db_fingerprint)
+    session.commit()
+    session.refresh(db_fingerprint)
+    return db_fingerprint
+
+
+def get_fingerprint(*, session: Session, fingerprint_id: uuid.UUID) -> Fingerprint | None:
+    statement = select(Fingerprint).where(Fingerprint.id == fingerprint_id)
+    return session.exec(statement).first()
+
+
+def get_employee_fingerprints(*, session: Session, employee_id: uuid.UUID, fingerprint_type: str | None = None) -> List[Fingerprint]:
+    statement = select(Fingerprint).where(Fingerprint.employee_id == employee_id)
+    if fingerprint_type:
+        statement = statement.where(Fingerprint.fingerprint_type == fingerprint_type)
+    statement = statement.where(Fingerprint.is_active == True)
+    return session.exec(statement).all()
+
+
+def get_fingerprints(
+    *, 
+    session: Session, 
+    skip: int = 0, 
+    limit: int = 100,
+    employee_id: uuid.UUID | None = None,
+    fingerprint_type: str | None = None,
+    is_active: bool | None = None
+) -> List[Fingerprint]:
+    statement = select(Fingerprint)
+    
+    if employee_id:
+        statement = statement.where(Fingerprint.employee_id == employee_id)
+    if fingerprint_type:
+        statement = statement.where(Fingerprint.fingerprint_type == fingerprint_type)
+    if is_active is not None:
+        statement = statement.where(Fingerprint.is_active == is_active)
+    
+    statement = statement.offset(skip).limit(limit).order_by(Fingerprint.created_at.desc())
+    return session.exec(statement).all()
+
+
+def update_fingerprint(*, session: Session, db_fingerprint: Fingerprint, fingerprint_in: FingerprintUpdate) -> Fingerprint:
+    fingerprint_data = fingerprint_in.model_dump(exclude_unset=True)
+    fingerprint_data["updated_at"] = datetime.utcnow()
+    
+    for field, value in fingerprint_data.items():
+        setattr(db_fingerprint, field, value)
+    
+    session.add(db_fingerprint)
+    session.commit()
+    session.refresh(db_fingerprint)
+    return db_fingerprint
+
+
+def delete_fingerprint(*, session: Session, fingerprint_id: uuid.UUID) -> bool:
+    fingerprint = get_fingerprint(session=session, fingerprint_id=fingerprint_id)
+    if not fingerprint:
+        return False
+    session.delete(fingerprint)
+    session.commit()
+    return True
+
+
+def get_fingerprint_count(*, session: Session, employee_id: uuid.UUID | None = None) -> int:
+    statement = select(func.count(Fingerprint.id))
+    if employee_id:
+        statement = statement.where(Fingerprint.employee_id == employee_id)
+    return session.exec(statement).one()
 
 
 # Device Sync Log CRUD operations

@@ -25,7 +25,33 @@ class ZKTecoService:
     def connect_device(self, device: ZKTecoDevice) -> bool:
         """Connect to a ZKTeco device"""
         try:
-            # Create ZK instance
+            # First, test basic network connectivity
+            import socket
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(5)
+            result = sock.connect_ex((device.device_ip, device.device_port))
+            sock.close()
+            
+            if result != 0:
+                # Network connectivity failed
+                device.device_status = "offline"
+                self.db.add(device)
+                self.db.commit()
+                
+                error_msg = f"Network connectivity failed to {device.device_ip}:{device.device_port}"
+                if result == 65:
+                    error_msg += " (No route to host - check device power and network cable)"
+                elif result == 111:
+                    error_msg += " (Connection refused - device may not be in network mode)"
+                elif result == 113:
+                    error_msg += " (No route to host - check network configuration)"
+                else:
+                    error_msg += f" (Error code: {result})"
+                
+                logger.error(f"Error connecting to device {device.device_name}: {error_msg}")
+                return False
+            
+            # Network connectivity OK, try ZK connection
             zk_instance = zk.ZK(device.device_ip, device.device_port, timeout=10)
             
             # Test connection
@@ -52,7 +78,16 @@ class ZKTecoService:
             device.device_status = "error"
             self.db.add(device)
             self.db.commit()
-            logger.error(f"Error connecting to device {device.device_name}: {str(e)}")
+            
+            error_msg = str(e)
+            if "can't reach device" in error_msg.lower():
+                error_msg = f"Device {device.device_ip} is not reachable. Please check: 1) Device is powered on, 2) Ethernet cable is connected, 3) Device is in network mode, 4) Network settings are correct"
+            elif "timeout" in error_msg.lower():
+                error_msg = f"Connection to device {device.device_ip} timed out. Device may be busy or network is slow"
+            elif "connection refused" in error_msg.lower():
+                error_msg = f"Connection refused by device {device.device_ip}. Device may not be in network mode or wrong port"
+            
+            logger.error(f"Error connecting to device {device.device_name}: {error_msg}")
             return False
     
     def disconnect_device(self, device_id: str) -> bool:

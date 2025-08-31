@@ -11,4 +11,36 @@ export default defineConfig({
     },
   },
   plugins: [react(), TanStackRouterVite()],
+  build: {
+    target: "es2015",
+    outDir: "dist",
+    sourcemap: false,
+    minify: "terser",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+          router: ["@tanstack/react-router"],
+          ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select"],
+        },
+      },
+    },
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+  },
+  server: {
+    port: 5173,
+    host: true,
+  },
+  preview: {
+    port: 4173,
+    host: true,
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom", "@tanstack/react-router"],
+  },
 })

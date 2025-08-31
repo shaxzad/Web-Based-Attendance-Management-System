@@ -1,14 +1,45 @@
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+import logging
 
 from app.api.main import api_router
 from app.core.config import settings
 
+# Configure logging for production
+logging.basicConfig(
+    level=getattr(logging, settings.LOG_LEVEL),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 def custom_generate_unique_id(route: APIRoute) -> str:
-    return f"{route.tags[0]}-{route.name}"
+    if route.tags and len(route.tags) > 0:
+        return f"{route.tags[0]}-{route.name}"
+    else:
+        return route.name
+
+
+# Custom security middleware for adding security headers
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next) -> Response:
+        response = await call_next(request)
+        
+        # Add security headers
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        
+        return response
 
 
 if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
@@ -16,9 +47,25 @@ if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=f"{settings.API_V1_STR}/openapi.json" if settings.DEBUG else None,
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
     generate_unique_id_function=custom_generate_unique_id,
 )
+
+# Production security middleware
+if settings.ENVIRONMENT == "production":
+    # Trusted host middleware
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["*"]  # Configure with your domain in production
+    )
+    
+    # Security headers middleware
+    app.add_middleware(SecurityHeadersMiddleware)
+
+# Compression middleware for better performance
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Set all CORS enabled origins
 if settings.all_cors_origins:
@@ -26,8 +73,22 @@ if settings.all_cors_origins:
         CORSMiddleware,
         allow_origins=settings.all_cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
+        max_age=3600,  # Cache preflight requests for 1 hour
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {"status": "healthy", "environment": settings.ENVIRONMENT}
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info(f"Starting {settings.PROJECT_NAME} in {settings.ENVIRONMENT} mode")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info(f"Shutting down {settings.PROJECT_NAME}")
