@@ -7,11 +7,20 @@ services:
     buildCommand: |
       pip install uv
       uv sync --frozen
-      source .venv/bin/activate
+      # Fix virtual environment path for Render
+      export VIRTUAL_ENV=/opt/render/project/src/backend/.venv
+      export PATH="$VIRTUAL_ENV/bin:$PATH"
       echo "Verifying alembic installation..."
       python -c "import alembic; print('Alembic is available')"
       echo "Build completed successfully"
-    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: |
+      # Set up environment for start command
+      export VIRTUAL_ENV=/opt/render/project/src/backend/.venv
+      export PATH="$VIRTUAL_ENV/bin:$PATH"
+      # Run prestart script (includes migrations)
+      bash scripts/prestart.sh
+      # Start the application
+      uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.4
