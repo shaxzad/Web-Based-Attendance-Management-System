@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: attendance-system-backend
+    env: python
+    plan: starter
+    rootDir: backend
+    buildCommand: |
+      pip install uv
+      uv sync --frozen
+      uv run alembic upgrade head
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: PROJECT_NAME
+        value: "Attendance Management System"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 11520
+      - key: ENVIRONMENT
+        value: production
+      - key: POSTGRES_SERVER
+        value: your-postgres-server
+      - key: POSTGRES_PORT
+        value: 5432
+      - key: POSTGRES_USER
+        value: your-postgres-user
+      - key: POSTGRES_PASSWORD
+        value: your-postgres-password
+      - key: POSTGRES_DB
+        value: attendance_db
+      - key: REDIS_URL
+        value: your-redis-url
+      - key: SMTP_TLS
+        value: true
+      - key: SMTP_SSL
+        value: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_HOST
+        value: smtp.your-provider.com
+      - key: SMTP_USER
+        value: your-email@your-domain.com
+      - key: SMTP_PASSWORD
+        value: your-email-password
+      - key: EMAILS_FROM_EMAIL
+        value: noreply@your-domain.com
+      - key: EMAILS_FROM_NAME
+        value: Attendance System
+      - key: FIRST_SUPERUSER
+        value: admin@your-domain.com
+      - key: FIRST_SUPERUSER_PASSWORD
+        value: your-strong-admin-password
+      - key: BACKEND_CORS_ORIGINS
+        value: '["https://your-domain.com","https://www.your-domain.com"]'
+      - key: FRONTEND_HOST
+        value: https://your-domain.com
