@@ -15,7 +15,8 @@ bcrypt==4.0.1
 pydantic-settings==2.2.1
 sentry-sdk[fastapi]==1.40.6
 pyjwt==2.8.0
-zklib==0.1.0
+# ZKTeco integration dependencies - fixed versions
+zklib==0.1.1
 celery==5.3.0
 redis==4.5.0
 asyncio-mqtt==0.16.0

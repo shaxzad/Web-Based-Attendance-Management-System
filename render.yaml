@@ -6,10 +6,13 @@ services:
     rootDir: backend
     buildCommand: |
       pip install uv
+      echo "Installing dependencies with uv..."
       uv sync --frozen
       echo "Verifying alembic installation..."
       python -c "import alembic; print('Alembic is available ✅')"
+      echo "Build completed successfully ✅"
     startCommand: |
+      echo "Starting application..."
       # Run prestart script (includes migrations)
       bash scripts/prestart.sh
       # Start the application
