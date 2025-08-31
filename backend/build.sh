@@ -18,6 +18,10 @@ source .venv/bin/activate
 # Set Python path
 export PYTHONPATH=/opt/render/project/src/backend
 
+# Verify alembic is available
+echo "Verifying alembic installation..."
+python -c "import alembic; print('Alembic is available')" || echo "Alembic import failed"
+
 # Build completed - migrations will be run during startup
 echo "Build completed - database migrations will be run during startup"
 

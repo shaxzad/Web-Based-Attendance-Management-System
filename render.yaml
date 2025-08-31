@@ -4,8 +4,17 @@ services:
     env: python
     plan: starter
     rootDir: backend
-    buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: chmod +x start.sh && ./start.sh
+    buildCommand: |
+      pip install uv
+      uv sync --frozen
+      source .venv/bin/activate
+      export PYTHONPATH=/opt/render/project/src/backend
+      python -c "import alembic; print('Alembic is available')"
+    startCommand: |
+      source .venv/bin/activate
+      export PYTHONPATH=/opt/render/project/src/backend
+      python -m alembic upgrade head
+      python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
