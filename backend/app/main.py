@@ -88,6 +88,21 @@ async def health_check():
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"Starting {settings.PROJECT_NAME} in {settings.ENVIRONMENT} mode")
+    
+    # Run database migrations on startup
+    try:
+        import subprocess
+        import sys
+        logger.info("Running database migrations...")
+        result = subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], 
+                              capture_output=True, text=True, timeout=30)
+        if result.returncode == 0:
+            logger.info("Database migrations completed successfully")
+        else:
+            logger.warning(f"Database migration failed: {result.stderr}")
+    except Exception as e:
+        logger.warning(f"Could not run database migrations: {e}")
+        logger.info("Application will start without running migrations")
 
 @app.on_event("shutdown")
 async def shutdown_event():
