@@ -1,47 +1,83 @@
 # Deployment Troubleshooting Guide
 
-This guide helps resolve common deployment issues, especially with Alembic migrations and virtual environment setup on Render.com.
+This guide helps resolve common deployment issues, especially with Alembic migrations on Render.com.
 
 ## Issues Fixed
 
-### 1. Virtual Environment Path Mismatch
+### 1. "alembic: command not found" Error
 
-**Problem**: Warning about `VIRTUAL_ENV=/opt/render/project/src/.venv` not matching the project environment path `.venv`
+**Problem**: `bash: line 1: alembic: command not found`
 
-**Solution**: The `render.yaml` has been updated to properly set the virtual environment path:
+**Root Cause**: Trying to run `alembic` directly instead of using `python -m alembic`
+
+**Solution**: Use `python -m alembic` instead of direct `alembic` commands:
+
+```bash
+# ❌ Wrong - this fails on Render
+alembic upgrade head
+
+# ✅ Correct - this works everywhere
+python -m alembic upgrade head
+```
+
+### 2. Virtual Environment Path Issues
+
+**Problem**: Complex PATH manipulation and virtual environment setup
+
+**Solution**: Simplified approach using `uv run` which handles the environment automatically:
 
 ```yaml
 buildCommand: |
   pip install uv
   uv sync --frozen
-  # Fix virtual environment path for Render
-  export VIRTUAL_ENV=/opt/render/project/src/backend/.venv
-  export PATH="$VIRTUAL_ENV/bin:$PATH"
+  echo "Verifying alembic installation..."
+  python -c "import alembic; print('Alembic is available ✅')"
 ```
 
-### 2. Alembic Migration Issues
+## Key Changes Made
 
-**Problem**: `alembic upgrade head` fails during deployment
+1. **Simplified Build Command**: Removed manual PATH hacks, let `uv` handle the environment
+2. **Correct Alembic Usage**: Use `python -m alembic` instead of direct `alembic` commands
+3. **Consistent uv run**: All Python commands use `uv run` for consistent environment
+4. **Cleaner Prestart Script**: Simplified with proper error handling
 
-**Solution**: The `render.yaml` now uses `scripts/prestart.sh` which includes proper error handling and fallback mechanisms:
+## Current Configuration
 
+### render.yaml
 ```yaml
+buildCommand: |
+  pip install uv
+  uv sync --frozen
+  echo "Verifying alembic installation..."
+  python -c "import alembic; print('Alembic is available ✅')"
+
 startCommand: |
-  # Set up environment for start command
-  export VIRTUAL_ENV=/opt/render/project/src/backend/.venv
-  export PATH="$VIRTUAL_ENV/bin:$PATH"
   # Run prestart script (includes migrations)
   bash scripts/prestart.sh
   # Start the application
   uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
 
-## Key Changes Made
+### scripts/prestart.sh
+```bash
+#! /usr/bin/env bash
+set -e
+set -x
 
-1. **Fixed Virtual Environment Path**: Set `VIRTUAL_ENV=/opt/render/project/src/backend/.venv` in both build and start commands
-2. **Added Prestart Script**: Uses `scripts/prestart.sh` which includes fallback mechanisms for running migrations
-3. **Fallback Mechanisms**: The prestart script tries `uv run` first, then falls back to direct Python execution
-4. **Proper Environment Setup**: Ensures the virtual environment is properly activated before running commands
+# Let the DB start
+echo "Waiting for database to be ready..."
+uv run python app/backend_pre_start.py
+
+# Run migrations
+echo "Running database migrations..."
+uv run python -m alembic upgrade head
+
+# Create initial data in DB
+echo "Creating initial data..."
+uv run python app/initial_data.py
+
+echo "Prestart script completed successfully"
+```
 
 ## Required Environment Variables
 
@@ -58,28 +94,31 @@ Make sure these are set in Render:
 If automatic migrations fail, you can run them manually in Render's shell:
 
 ```bash
-# Using uv (recommended)
+# ✅ Correct way
 uv run python -m alembic upgrade head
-
-# Using Python directly
-python -m alembic upgrade head
 
 # Check current status
 uv run python -m alembic current
+
+# Check migration history
+uv run python -m alembic history
 ```
 
-## File Permissions
+## Why This Works
 
-The prestart script is now executable:
-```bash
-chmod +x scripts/prestart.sh
+1. **`uv run`**: Automatically activates the virtual environment and runs commands
+2. **`python -m alembic`**: Ensures Alembic runs in the correct Python environment
+3. **Simplified PATH**: No manual environment variable manipulation needed
+4. **Consistent Environment**: Same approach for all Python commands
+
+## Dependencies
+
+Alembic is properly declared in `pyproject.toml`:
+```toml
+dependencies = [
+    "alembic<2.0.0,>=1.12.1",
+    # ... other dependencies
+]
 ```
 
-## What the Prestart Script Does
-
-1. **Environment Setup**: Handles virtual environment path for different environments
-2. **Database Wait**: Waits for database to be ready using `backend_pre_start.py`
-3. **Migrations**: Runs `alembic upgrade head` with fallback mechanisms
-4. **Initial Data**: Creates initial data using `initial_data.py`
-
-The script includes proper error handling and will work whether `uv` is available or not.
+The `uv sync --frozen` command will install all dependencies including Alembic.

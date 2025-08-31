@@ -7,16 +7,9 @@ services:
     buildCommand: |
       pip install uv
       uv sync --frozen
-      # Fix virtual environment path for Render
-      export VIRTUAL_ENV=/opt/render/project/src/backend/.venv
-      export PATH="$VIRTUAL_ENV/bin:$PATH"
       echo "Verifying alembic installation..."
-      python -c "import alembic; print('Alembic is available')"
-      echo "Build completed successfully"
+      python -c "import alembic; print('Alembic is available ✅')"
     startCommand: |
-      # Set up environment for start command
-      export VIRTUAL_ENV=/opt/render/project/src/backend/.venv
-      export PATH="$VIRTUAL_ENV/bin:$PATH"
       # Run prestart script (includes migrations)
       bash scripts/prestart.sh
       # Start the application
