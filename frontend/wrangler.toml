@@ -9,6 +9,10 @@ name = "attendance-management-frontend"
 [env.staging]
 name = "attendance-management-frontend-staging"
 
+# Pages configuration
+[site]
+bucket = "./dist"
+
 [env.production]
 name = "attendance-management-frontend"
 
