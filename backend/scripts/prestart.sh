@@ -22,16 +22,15 @@ run_python() {
 
 # Function to run alembic commands with fallback
 run_alembic() {
-    local command="$1"
-    echo "Running alembic: $command"
+    echo "Running alembic: $*"
     
     # Try uv run first
     if command -v uv &> /dev/null; then
         echo "Using uv run for alembic..."
-        uv run python -m alembic "$command"
+        uv run python -m alembic "$@"
     else
         echo "uv not available, using python -m alembic directly..."
-        python -m alembic "$command"
+        python -m alembic "$@"
     fi
 }
 
@@ -41,7 +40,7 @@ run_python "app/backend_pre_start.py"
 
 # Run migrations
 echo "Running database migrations..."
-run_alembic "upgrade head"
+run_alembic upgrade head
 
 # Create initial data in DB
 echo "Creating initial data..."
