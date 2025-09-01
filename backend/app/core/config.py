@@ -50,6 +50,7 @@ class Settings(BaseSettings):
         ]
 
     PROJECT_NAME: str = "Attendance Management System"
+    STACK_NAME: str = "IOM"
     SENTRY_DSN: HttpUrl | None = None
     
     # Database configuration - support both DATABASE_URL and individual PostgreSQL vars

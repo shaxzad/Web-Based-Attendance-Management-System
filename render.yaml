@@ -10,22 +10,79 @@ services:
     buildCommand: docker build -t attendance-backend .
     startCommand: ./start.sh
     envVars:
+      # Database - use Render's DATABASE_URL
       - key: DATABASE_URL
         fromDatabase:
           name: attendance-postgres
           property: connectionString
+      
+      # Environment
       - key: ENVIRONMENT
         value: production
       - key: PYTHONPATH
         value: /app
-      - key: FIRST_SUPERUSER_PASSWORD
-        generateValue: true
-      - key: SECRET_KEY
-        generateValue: true
+      
+      # Project settings
+      - key: PROJECT_NAME
+        value: "Attendance Management System"
+      - key: STACK_NAME
+        value: "IOM"
+      
+      # Frontend and CORS
       - key: FRONTEND_HOST
         value: "https://your-frontend-domain.com"
       - key: BACKEND_CORS_ORIGINS
         value: "https://your-frontend-domain.com,http://localhost:5173"
+      
+      # Security
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FIRST_SUPERUSER
+        value: "admin@example.com"
+      - key: FIRST_SUPERUSER_PASSWORD
+        generateValue: true
+      
+      # Email settings
+      - key: SMTP_HOST
+        value: ""
+      - key: SMTP_USER
+        value: ""
+      - key: SMTP_PASSWORD
+        value: ""
+      - key: EMAILS_FROM_EMAIL
+        value: "info@example.com"
+      - key: SMTP_TLS
+        value: "True"
+      - key: SMTP_SSL
+        value: "False"
+      - key: SMTP_PORT
+        value: "587"
+      
+      # PostgreSQL (fallback - will be overridden by DATABASE_URL)
+      - key: POSTGRES_SERVER
+        fromDatabase:
+          name: attendance-postgres
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: attendance-postgres
+          property: port
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: attendance-postgres
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: attendance-postgres
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: attendance-postgres
+          property: password
+      
+      # Monitoring
+      - key: SENTRY_DSN
+        value: ""
 
 databases:
   - name: attendance-postgres
