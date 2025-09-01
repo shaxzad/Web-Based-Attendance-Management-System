@@ -49,17 +49,25 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST
         ]
 
-    PROJECT_NAME: str
+    PROJECT_NAME: str = "Attendance Management System"
     SENTRY_DSN: HttpUrl | None = None
-    POSTGRES_SERVER: str
+    
+    # Database configuration - support both DATABASE_URL and individual PostgreSQL vars
+    DATABASE_URL: str | None = None
+    POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str
+    POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = ""
-    POSTGRES_DB: str = ""
+    POSTGRES_DB: str = "attendance_db"
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
+        # If DATABASE_URL is provided (e.g., from Render.com), use it directly
+        if self.DATABASE_URL:
+            return PostgresDsn(self.DATABASE_URL)
+        
+        # Otherwise, build from individual PostgreSQL environment variables
         return MultiHostUrl.build(
             scheme="postgresql+psycopg",
             username=self.POSTGRES_USER,
@@ -112,8 +120,8 @@ class Settings(BaseSettings):
     CACHE_TTL: int = 300  # 5 minutes
     REDIS_URL: str | None = None
 
-    FIRST_SUPERUSER: EmailStr
-    FIRST_SUPERUSER_PASSWORD: str
+    FIRST_SUPERUSER: EmailStr = "admin@example.com"
+    FIRST_SUPERUSER_PASSWORD: str = "changethis"
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":

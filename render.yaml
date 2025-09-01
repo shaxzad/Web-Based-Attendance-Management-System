@@ -7,6 +7,8 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /health
+    buildCommand: docker build -t attendance-backend .
+    startCommand: ./start.sh
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -16,8 +18,14 @@ services:
         value: production
       - key: PYTHONPATH
         value: /app
-    buildCommand: docker build -t attendance-backend .
-    startCommand: ./start.sh
+      - key: FIRST_SUPERUSER_PASSWORD
+        generateValue: true
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_HOST
+        value: "https://your-frontend-domain.com"
+      - key: BACKEND_CORS_ORIGINS
+        value: "https://your-frontend-domain.com,http://localhost:5173"
 
 databases:
   - name: attendance-postgres
