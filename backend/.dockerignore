@@ -1,45 +1,42 @@
 # Python
-__pycache__
-app.egg-info
-*.pyc
-*.pyo
-*.pyd
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 .Python
-.mypy_cache
-.coverage
-htmlcov
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
 .venv
-.pytest_cache
-.tox
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Development and testing files
-test_*.py
-debug_*.py
-*_test.py
-*_tests.py
-check_*.py
-monitor_*.py
-fix_*.py
-network_*.py
-device_manager.py
-
-# Documentation and guides
-*.md
-ZKTECO_*.md
-
-# IDE and editor files
-.vscode
-.idea
+# IDE
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
 
-# OS generated files
+# OS
 .DS_Store
 .DS_Store?
 ._*
@@ -48,25 +45,25 @@ ZKTECO_*.md
 ehthumbs.db
 Thumbs.db
 
-# Logs
-*.log
-logs/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Environment files
-.env.local
-.env.development
-.env.test
-
 # Git
-.git
+.git/
 .gitignore
 
 # Docker
-Dockerfile*
-docker-compose*
+Dockerfile
+docker-compose.yml
 .dockerignore
+
+# Logs
+*.log
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/

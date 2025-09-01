@@ -1,158 +1,133 @@
-# Deployment Troubleshooting Guide
+# Docker Deployment Troubleshooting Guide
 
-This guide helps resolve common deployment issues, especially with Alembic migrations on Render.com.
+This guide helps resolve common deployment issues with Docker-based deployment on Render.com.
 
-## Issues Fixed
+## Current Docker Deployment Setup
 
-### 1. "alembic: command not found" Error
+### 1. Docker Configuration
 
-**Problem**: `bash: line 1: alembic: command not found`
+**Dockerfile**: `backend/Dockerfile`
+- Uses Python 3.12.6-slim
+- Includes all dependencies
+- Runs as non-root user
+- Includes health checks
 
-**Root Cause**: Dependencies not properly installed due to version mismatch with `zklib`
+**Startup Scripts**:
+- `start.sh` - Production startup (includes migrations)
+- `start-dev.sh` - Development startup (with hot-reload)
 
-**Solution**: 
-1. Use `python -m alembic` instead of direct `alembic` commands
-2. Fixed `zklib` version from `0.1.0` to `0.1.1` (the version that actually exists on PyPI)
-3. Use `uv sync --frozen` for consistent dependency installation
+**Docker Compose**: `backend/docker-compose.yml`
+- Local development environment
+- PostgreSQL database
+- Automatic health checks
 
-### 2. Version Mismatch Issue
+### 2. Render.com Configuration
 
-**Problem**: `zklib==0.1.0` doesn't exist on PyPI, only `zklib==0.1.1`
-
-**Why it worked locally**: 
-- Your local environment already had `zklib==0.1.1` installed
-- `uv sync --frozen` locally used existing packages
-- Render tried to install exactly `zklib==0.1.0` which doesn't exist
-
-**Solution**: Updated both `requirements.txt` and `pyproject.toml` to use `zklib==0.1.1`
-
-## Key Changes Made
-
-1. **Fixed Version Mismatch**: Changed `zklib==0.1.0` to `zklib==0.1.1`
-2. **Restored All Dependencies**: All ZKTeco dependencies are now included
-3. **Enhanced Error Handling**: Added fallback mechanisms in prestart script
-4. **Better Logging**: Added more detailed logging for debugging
-
-## Current Configuration
-
-### render.yaml
+**render.yaml**:
 ```yaml
-buildCommand: |
-  pip install uv
-  echo "Installing dependencies with uv..."
-  uv sync --frozen
-  echo "Verifying alembic installation..."
-  python -c "import alembic; print('Alembic is available ✅')"
-  echo "Build completed successfully ✅"
-
-startCommand: |
-  echo "Starting application..."
-  # Run prestart script (includes migrations)
-  bash scripts/prestart.sh
-  # Start the application
-  uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+services:
+  - type: web
+    name: attendance-backend
+    env: docker  # Docker environment
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    startCommand: ./start.sh  # Production startup script
 ```
 
-### scripts/prestart.sh
+## Common Issues and Solutions
+
+### 1. "start.sh: Permission denied" Error
+
+**Problem**: Startup script not executable
+
+**Solution**: Ensure script is executable in Dockerfile
+```dockerfile
+# Make startup script executable
+RUN chmod +x start.sh
+```
+
+### 2. "alembic: command not found" Error
+
+**Problem**: Alembic not available in container
+
+**Solution**: Alembic is installed via requirements.txt and available in the container
+
+### 3. Database Connection Issues
+
+**Problem**: App starts before database is ready
+
+**Solution**: Startup script includes database readiness check
 ```bash
-#! /usr/bin/env bash
-set -e
-set -x
-
-echo "Starting prestart script..."
-
-# Function to run Python commands with fallback
-run_python() {
-    local script="$1"
-    echo "Running: $script"
-    
-    # Try uv run first
-    if command -v uv &> /dev/null; then
-        echo "Using uv run..."
-        uv run python "$script"
-    else
-        echo "uv not available, using python directly..."
-        python "$script"
-    fi
-}
-
-# Function to run alembic commands with fallback
-run_alembic() {
-    local command="$1"
-    echo "Running alembic: $command"
-    
-    # Try uv run first
-    if command -v uv &> /dev/null; then
-        echo "Using uv run for alembic..."
-        uv run python -m alembic "$command"
-    else
-        echo "uv not available, using python -m alembic directly..."
-        python -m alembic "$command"
-    fi
-}
-
-# Let the DB start
-echo "Waiting for database to be ready..."
-run_python "app/backend_pre_start.py"
-
-# Run migrations
-echo "Running database migrations..."
-run_alembic "upgrade head"
-
-# Create initial data in DB
-echo "Creating initial data..."
-run_python "app/initial_data.py"
-
-echo "Prestart script completed successfully ✅"
+# Wait for database to be ready
+python -m app.backend_pre_start
 ```
 
-## Required Environment Variables
+### 4. Migration Failures
 
-Make sure these are set in Render:
-- `POSTGRES_SERVER`
-- `POSTGRES_USER` 
-- `POSTGRES_PASSWORD`
-- `POSTGRES_DB`
-- `POSTGRES_PORT`
-- `ENVIRONMENT` (should be "production")
+**Problem**: Migrations fail on startup
 
-## Manual Migration Commands (if needed)
-
-If automatic migrations fail, you can run them manually in Render's shell:
-
+**Solution**: Migrations run automatically via startup script
 ```bash
-# ✅ Correct way
-uv run python -m alembic upgrade head
-
-# Check current status
-uv run python -m alembic current
-
-# Check migration history
-uv run python -m alembic history
+# Run database migrations
+alembic upgrade head
 ```
 
-## Why This Works
+## Deployment Process
 
-1. **`uv sync --frozen`**: Consistent dependency installation across environments
-2. **`python -m alembic`**: Ensures Alembic runs in the correct Python environment
-3. **Fallback Mechanisms**: Script handles cases where `uv` might not be available
-4. **Correct Versions**: All dependencies use versions that actually exist on PyPI
-
-## Dependencies
-
-All dependencies are properly declared with correct versions:
-```
-alembic==1.12.1
-fastapi==0.114.2
-zklib==0.1.1  # Fixed from 0.1.0
-# ... other dependencies
+### 1. Local Testing
+```bash
+cd backend
+docker compose up --build
 ```
 
-The `uv sync --frozen` command will install all dependencies including Alembic.
+### 2. Production Deployment
+1. Push code to GitHub
+2. Render.com automatically:
+   - Builds Docker image from Dockerfile
+   - Runs startup script (includes migrations)
+   - Starts application
 
-## Why It Worked Locally But Failed on Render
+### 3. Environment Variables
+Configured in render.yaml:
+- `DATABASE_URL` - Automatically from database
+- `ENVIRONMENT` - Set to production
+- `PYTHONPATH` - Set to /app
 
-1. **Local Environment**: Already had `zklib==0.1.1` installed
-2. **Render Environment**: Fresh install tried to install `zklib==0.1.0` (which doesn't exist)
-3. **Version Resolution**: Local `uv sync` used existing packages, Render failed on missing version
-4. **Platform Differences**: macOS vs Linux environment differences
+## Troubleshooting Commands
+
+### Check Container Logs
+```bash
+# Local
+docker compose logs backend
+
+# Production (Render.com dashboard)
+# View service logs in Render.com dashboard
+```
+
+### Verify Database Connection
+```bash
+# Check if database is accessible
+docker compose exec backend python -m app.backend_pre_start
+```
+
+### Test Migrations
+```bash
+# Run migrations manually if needed
+docker compose exec backend alembic upgrade head
+```
+
+## Best Practices
+
+1. **Always test locally** with Docker Compose before deploying
+2. **Use startup scripts** to ensure proper initialization order
+3. **Include health checks** in Dockerfile
+4. **Run migrations automatically** on startup
+5. **Use environment-specific** startup scripts (dev vs prod)
+
+## Support
+
+For additional help:
+- Check Render.com service logs
+- Verify Docker image builds successfully
+- Ensure all environment variables are set
+- Test startup script locally first

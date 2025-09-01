@@ -8,6 +8,6 @@ python -m app.backend_pre_start
 echo "Running database migrations..."
 alembic upgrade head
 
-# Start the application
-echo "Starting application..."
-exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+# Start the application with hot-reload for development
+echo "Starting application with hot-reload..."
+exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

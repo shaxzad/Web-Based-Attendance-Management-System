@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Render.com Deployment Script
-# This script helps deploy the Attendance Management System to Render.com
+# Render.com Docker Deployment Script
+# This script helps deploy the Attendance Management System to Render.com using Docker
 
 set -e
 
-echo "🚀 Starting Render.com deployment..."
+echo "🚀 Starting Render.com Docker deployment..."
 
 # Check if we're in the right directory
 if [ ! -f "render.yaml" ]; then
@@ -22,7 +22,7 @@ fi
 # Check if changes are committed
 if [ -n "$(git status --porcelain)" ]; then
     echo "⚠️  Warning: You have uncommitted changes. Please commit them before deploying."
-    echo "   Run: git add . && git commit -m 'Update for Render deployment'"
+    echo "   Run: git add . && git commit -m 'Update for Render Docker deployment'"
     read -p "   Continue anyway? (y/N): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -37,35 +37,39 @@ if ! git remote get-url origin > /dev/null 2>&1; then
     exit 1
 fi
 
-echo "📋 Deployment checklist:"
+echo "📋 Docker deployment checklist:"
 echo "   ✅ render.yaml configuration file exists"
-echo "   ✅ backend/requirements.txt exists"
-echo "   ✅ backend/runtime.txt exists"
-echo "   ✅ .render-buildpacks exists"
+echo "   ✅ backend/Dockerfile exists"
+echo "   ✅ backend/start.sh exists (production startup script)"
+echo "   ✅ backend/start-dev.sh exists (development startup script)"
 
 echo ""
-echo "🔧 Next steps:"
+echo "🔧 Next steps for Docker deployment:"
 echo "1. Push your code to GitHub:"
 echo "   git push origin main"
 echo ""
 echo "2. In your Render.com dashboard:"
 echo "   - Create a new Web Service"
 echo "   - Connect your GitHub repository"
-echo "   - Set the Root Directory to: backend"
-echo "   - Set Build Command to: pip install -r requirements.txt"
-echo "   - Set Start Command to: uvicorn app.main:app --host 0.0.0.0 --port \$PORT"
+echo "   - Set Environment to: Docker"
+echo "   - Root Directory: . (project root, not backend)"
+echo "   - Build Command: (Render will use Dockerfile automatically)"
+echo "   - Start Command: ./backend/start.sh (already set in render.yaml)"
 echo ""
-echo "3. Configure environment variables in Render.com:"
-echo "   - SECRET_KEY (generate a secure random string)"
-echo "   - POSTGRES_SERVER (your database URL)"
-echo "   - POSTGRES_USER (your database username)"
-echo "   - POSTGRES_PASSWORD (your database password)"
-echo "   - POSTGRES_DB (your database name)"
-echo "   - And other required environment variables"
+echo "3. Render.com will automatically:"
+echo "   - Detect your Dockerfile"
+echo "   - Build the Docker image"
+echo "   - Run migrations on startup (via start.sh)"
+echo "   - Start your application"
 echo ""
-echo "4. Deploy the service"
+echo "4. Environment variables are configured in render.yaml:"
+echo "   - DATABASE_URL (automatically from database)"
+echo "   - ENVIRONMENT=production"
+echo "   - PYTHONPATH=/app"
 echo ""
-echo "📚 For more information, see: https://render.com/docs/deploy-fastapi"
+echo "5. Deploy the service"
+echo ""
+echo "📚 For more information, see: https://render.com/docs/deploy-docker"
 
 echo ""
-echo "🎯 Ready to deploy! Follow the steps above to complete your Render.com deployment."
+echo "🎯 Ready to deploy with Docker! Follow the steps above to complete your Render.com deployment."
