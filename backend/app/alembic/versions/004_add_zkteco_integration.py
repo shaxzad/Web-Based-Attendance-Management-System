@@ -75,6 +75,32 @@ def upgrade() -> None:
     
     # Create foreign key for device_sync_log.device_id
     op.create_foreign_key('fk_devicesynclog_device_id', 'devicesynclog', 'zktecodevice', ['device_id'], ['id'])
+    
+    # Create fingerprint table
+    op.create_table('fingerprint',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('employee_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('fingerprint_type', sa.String(length=20), nullable=False),
+        sa.Column('fingerprint_position', sa.String(length=20), nullable=False),
+        sa.Column('fingerprint_data', sa.TEXT(), nullable=False),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
+        sa.PrimaryKeyConstraint('id')
+    )
+    
+    # Create indexes for fingerprint table
+    op.create_index('ix_fingerprint_employee_id', 'fingerprint', ['employee_id'])
+    op.create_index('ix_fingerprint_fingerprint_type', 'fingerprint', ['fingerprint_type'])
+    op.create_index('ix_fingerprint_fingerprint_position', 'fingerprint', ['fingerprint_position'])
+    op.create_index('ix_fingerprint_is_active', 'fingerprint', ['is_active'])
+    op.create_index('ix_fingerprint_created_at', 'fingerprint', ['created_at'])
+    
+    # Create unique constraint for fingerprint
+    op.create_unique_constraint('uq_fingerprint_employee_type_position', 'fingerprint', ['employee_id', 'fingerprint_type', 'fingerprint_position'])
+    
+    # Create foreign key for fingerprint.employee_id
+    op.create_foreign_key('fingerprint_employee_id_fkey', 'fingerprint', 'employee', ['employee_id'], ['id'], ondelete='CASCADE')
 
 
 def downgrade() -> None:
@@ -99,6 +125,18 @@ def downgrade() -> None:
     op.drop_column('attendance', 'attendance_type')
     op.drop_column('attendance', 'zkteco_device_id')
     
+    # Drop foreign keys
+    op.drop_constraint('fingerprint_employee_id_fkey', 'fingerprint', type_='foreignkey')
+    
+    # Drop indexes and constraints for fingerprint
+    op.drop_constraint('uq_fingerprint_employee_type_position', 'fingerprint', type_='unique')
+    op.drop_index('ix_fingerprint_created_at', table_name='fingerprint')
+    op.drop_index('ix_fingerprint_is_active', table_name='fingerprint')
+    op.drop_index('ix_fingerprint_fingerprint_position', table_name='fingerprint')
+    op.drop_index('ix_fingerprint_fingerprint_type', table_name='fingerprint')
+    op.drop_index('ix_fingerprint_employee_id', table_name='fingerprint')
+    
     # Drop tables
+    op.drop_table('fingerprint')
     op.drop_table('devicesynclog')
     op.drop_table('zktecodevice') 
