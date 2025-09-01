@@ -6,6 +6,8 @@ npm run build
 
 # Deploy to Cloudflare Pages
 echo "Deploying to Cloudflare Pages..."
-npx wrangler pages deploy dist
+npx wrangler pages deploy dist --project-name=attendance-management-frontend
+
+echo "Deployment completed!"
 
 echo "Deployment completed!"
