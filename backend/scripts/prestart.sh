@@ -5,6 +5,14 @@ set -x
 
 echo "Starting prestart script..."
 
+# Check Python version
+echo "Checking Python version..."
+python --version
+if [[ $(python -c "import sys; print(sys.version_info[:2] >= (3, 12))") == "False" ]]; then
+    echo "Warning: Python 3.12+ is recommended for compatibility with psycopg-binary"
+    echo "Current version: $(python --version)"
+fi
+
 # Function to run Python commands with fallback
 run_python() {
     local script="$1"
