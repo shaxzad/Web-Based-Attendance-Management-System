@@ -2,17 +2,11 @@ name = "attendance-management-frontend"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# This is for Cloudflare Pages deployment
-[env.production]
-name = "attendance-management-frontend"
-
-[env.staging]
-name = "attendance-management-frontend-staging"
-
 # Pages configuration
 [site]
 bucket = "./dist"
 
+# Environment configurations
 [env.production]
 name = "attendance-management-frontend"
 
