@@ -249,5 +249,3 @@ uvicorn app.main:app --reload
 # uv sync
 
 # alembic upgrade head
-
-#deploy
