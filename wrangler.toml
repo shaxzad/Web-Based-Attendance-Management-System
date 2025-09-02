@@ -1,4 +1,4 @@
-name = "attendance-management-frontend"
+name = "lamhatrack"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
@@ -7,4 +7,4 @@ pages_build_output_dir = "frontend/dist"
 
 # Environment configurations
 [env.production]
-name = "attendance-management-frontend"
+name = "lamhatrack"
