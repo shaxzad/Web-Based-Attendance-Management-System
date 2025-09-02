@@ -24,7 +24,6 @@ export default defineConfig({
         },
       },
     },
-
   },
   server: {
     port: 5173,
@@ -39,4 +38,8 @@ export default defineConfig({
   },
   // Ensure proper base path for Cloudflare Pages
   base: "/",
+  // Explicitly define environment variables for the client
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8000'),
+  },
 })

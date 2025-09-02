@@ -14,6 +14,12 @@ import { CustomProvider } from "./components/ui/provider"
 
 // Set API base URL - fallback to localhost if env var is not set
 const apiUrl = (import.meta as any).env?.VITE_API_URL || "http://localhost:8000"
+
+// Debug logging to help identify the issue
+console.log('Environment variables:', (import.meta as any).env)
+console.log('VITE_API_URL from env:', (import.meta as any).env?.VITE_API_URL)
+console.log('Final API URL:', apiUrl)
+
 OpenAPI.BASE = apiUrl
 
 OpenAPI.TOKEN = async () => {
