@@ -4,12 +4,7 @@ compatibility_flags = ["nodejs_compat"]
 
 # Pages configuration
 pages_build_output_dir = "frontend/dist"
-[site]
-bucket = "frontend/dist"
 
 # Environment configurations
 [env.production]
 name = "attendance-management-frontend"
-
-[env.staging]
-name = "attendance-management-frontend-staging"
