@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Log environment variables for debugging
+echo "Environment variables:"
+echo "ENVIRONMENT: $ENVIRONMENT"
+echo "FRONTEND_HOST: $FRONTEND_HOST"
+echo "BACKEND_CORS_ORIGINS: $BACKEND_CORS_ORIGINS"
+
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
 python -m app.backend_pre_start
