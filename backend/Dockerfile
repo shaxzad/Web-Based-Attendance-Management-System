@@ -5,11 +5,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
 
-# Force production environment variables (temporary fix until Render works)
-ENV ENVIRONMENT=production
-ENV FRONTEND_HOST=https://lamhatrack.pages.dev
-ENV BACKEND_CORS_ORIGINS=https://lamhatrack.pages.dev,http://localhost:5173
-
 WORKDIR /app
 
 # Install system dependencies
