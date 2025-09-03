@@ -16,11 +16,11 @@ services:
           name: attendance-postgres
           property: connectionString
       
-      # Environment
+      # Environment - FORCE OVERRIDE Render defaults
       - key: ENVIRONMENT
-        value: production
+        value: "production"
       - key: PYTHONPATH
-        value: /app
+        value: "/app"
       
       # Project settings
       - key: PROJECT_NAME
@@ -28,7 +28,7 @@ services:
       - key: STACK_NAME
         value: "IOM"
       
-      # Frontend and CORS
+      # Frontend and CORS - FORCE OVERRIDE Render defaults
       - key: FRONTEND_HOST
         value: "https://lamhatrack.pages.dev"
       - key: BACKEND_CORS_ORIGINS
