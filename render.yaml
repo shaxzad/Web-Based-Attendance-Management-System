@@ -24,9 +24,9 @@ services:
       
       # Project settings
       - key: PROJECT_NAME
-        value: "Attendance Management System"
+        value: "Lamhatrack - HRMS"
       - key: STACK_NAME
-        value: "IOM"
+        value: "lamhatrack"
       
       # Frontend and CORS - FORCE OVERRIDE Render defaults
       - key: FRONTEND_HOST

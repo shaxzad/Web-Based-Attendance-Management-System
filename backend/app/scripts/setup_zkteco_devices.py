@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
 """
-ZKTeco Device Setup Script
-
-This script helps set up and configure ZKTeco fingerprint devices for the attendance management system.
-It can be used to:
-1. Discover devices on the network
-2. Add devices to the database
-3. Configure device settings
-4. Upload employee data to devices
-5. Test device connections
+This script helps set up and configure ZKTeco fingerprint devices for the Lamhatrack HRMS system.
 """
 
 import argparse

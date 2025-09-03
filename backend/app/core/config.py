@@ -49,8 +49,8 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST
         ]
 
-    PROJECT_NAME: str = "Attendance Management System"
-    STACK_NAME: str = "IOM"
+    PROJECT_NAME: str = "Lamhatrack - HRMS"
+    STACK_NAME: str = "lamhatrack"
     SENTRY_DSN: HttpUrl | None = None
     
     # Database configuration - support both DATABASE_URL and individual PostgreSQL vars

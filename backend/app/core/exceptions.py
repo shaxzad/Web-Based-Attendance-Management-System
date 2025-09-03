@@ -3,7 +3,7 @@ from fastapi import HTTPException
 
 
 class AttendanceManagementException(Exception):
-    """Base exception for attendance management system"""
+    """Base exception for Lamhatrack HRMS system"""
     def __init__(self, message: str, status_code: int = 500, details: Optional[Dict[str, Any]] = None):
         self.message = message
         self.status_code = status_code
