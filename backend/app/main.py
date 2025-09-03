@@ -67,16 +67,28 @@ if settings.ENVIRONMENT == "production":
 # Compression middleware for better performance
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# Set all CORS enabled origins
-if settings.all_cors_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.all_cors_origins,
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["*"],
-        max_age=3600,  # Cache preflight requests for 1 hour
-    )
+# Debug CORS configuration
+logger.info(f"CORS Configuration - ENVIRONMENT: {settings.ENVIRONMENT}")
+logger.info(f"CORS Configuration - FRONTEND_HOST: {settings.FRONTEND_HOST}")
+logger.info(f"CORS Configuration - BACKEND_CORS_ORIGINS: {settings.BACKEND_CORS_ORIGINS}")
+logger.info(f"CORS Configuration - all_cors_origins: {settings.all_cors_origins}")
+
+# Always add CORS middleware with proper fallbacks
+cors_origins = settings.all_cors_origins if settings.all_cors_origins else [
+    "http://localhost:5173",  # Development fallback
+    "https://lamhatrack.pages.dev"  # Production fallback
+]
+
+logger.info(f"Final CORS origins: {cors_origins}")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+    max_age=3600,  # Cache preflight requests for 1 hour
+)
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
