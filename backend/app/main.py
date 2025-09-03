@@ -73,17 +73,19 @@ logger.info(f"CORS Configuration - FRONTEND_HOST: {settings.FRONTEND_HOST}")
 logger.info(f"CORS Configuration - BACKEND_CORS_ORIGINS: {settings.BACKEND_CORS_ORIGINS}")
 logger.info(f"CORS Configuration - all_cors_origins: {settings.all_cors_origins}")
 
-# Always add CORS middleware with proper fallbacks
-cors_origins = settings.all_cors_origins if settings.all_cors_origins else [
-    "http://localhost:5173",  # Development fallback
-    "https://lamhatrack.pages.dev"  # Production fallback
+# HARDCODED CORS origins to bypass Render environment variable issues
+# This is a temporary fix until Render fixes their environment variable handling
+HARDCODED_CORS_ORIGINS = [
+    "https://lamhatrack.pages.dev",  # Your production frontend
+    "http://localhost:5173",         # Local development
+    "http://localhost:3000",         # Alternative local port
 ]
 
-logger.info(f"Final CORS origins: {cors_origins}")
+logger.info(f"Using HARDCODED CORS origins: {HARDCODED_CORS_ORIGINS}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=HARDCODED_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
