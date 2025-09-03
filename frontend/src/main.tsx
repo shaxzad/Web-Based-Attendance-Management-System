@@ -11,14 +11,10 @@ import { routeTree } from "./routeTree.gen"
 
 import { ApiError, OpenAPI } from "./client"
 import { CustomProvider } from "./components/ui/provider"
+import { env } from "./config/env"
 
-// Set API base URL - fallback to localhost if env var is not set
-const apiUrl = (import.meta as any).env?.VITE_API_URL || "http://localhost:8000"
-
-// Debug logging to help identify the issue
-console.log('Environment variables:', (import.meta as any).env)
-console.log('VITE_API_URL from env:', (import.meta as any).env?.VITE_API_URL)
-console.log('Final API URL:', apiUrl)
+// Set API base URL from environment configuration
+const apiUrl = env.VITE_API_URL
 
 OpenAPI.BASE = apiUrl
 
