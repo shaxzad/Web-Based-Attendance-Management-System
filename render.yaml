@@ -30,9 +30,9 @@ services:
       
       # Frontend and CORS
       - key: FRONTEND_HOST
-        value: "https://your-frontend-domain.com"
+        value: "https://lamhatrack.pages.dev"
       - key: BACKEND_CORS_ORIGINS
-        value: "https://your-frontend-domain.com,http://localhost:5173"
+        value: "https://lamhatrack.pages.dev,http://localhost:5173"
       
       # Security
       - key: SECRET_KEY
